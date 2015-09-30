@@ -1,5 +1,6 @@
-#Make A Rover
 [Dallas Young Makers Club](http://dallasyoungmakers.org/)
+
+#Make A Rover
 
 
 ##Checklist
@@ -31,7 +32,6 @@
 
 Below is a list of programs loaded into your robot:
 
------------------------------------------------------------------------
 | `Prgm` # | Description                                              |
 |---------:|:---------------------------------------------------------|
 |        1 | The rover makes sounds when you hit the bumpers.         |
@@ -39,7 +39,6 @@ Below is a list of programs loaded into your robot:
 |        3 | The rover moves around in a spiral.                      |
 |        4 | The rover turns around when it hits something.           |
 |        5 | It turns away from obstacles and tries not to get stuck. |
------------------------------------------------------------------------
 
 
 ##Programming
