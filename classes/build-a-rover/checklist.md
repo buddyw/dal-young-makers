@@ -1,9 +1,8 @@
 #Make A Rover
-###[Dallas Young Makers Club](http://dallasyoungmakers.org/)
+[Dallas Young Makers Club](http://dallasyoungmakers.org/)
 
 
 ##Checklist
------------
 
 1. Go through the parts list and make sure that you have all of the necessary pieces to build your robot.
 
@@ -29,7 +28,6 @@
 
 
 ##Programs
-----------
 
 Below is a list of programs loaded into your robot:
 
@@ -43,8 +41,8 @@ Below is a list of programs loaded into your robot:
 |        5 | It turns away from obstacles and tries not to get stuck. |
 -----------------------------------------------------------------------
 
+
 ##Programming
--------------
 
 All of the robot's programs are written in "Not Quite C" (called NQC for short).  This is a free and open source language and tool you can use to program these Lego RCX bricks. NQC is very similar to C.  C and C-like languages are very common and are used to program everything from robots and microwave ovens to desktop PCs and iPhone apps.
 
