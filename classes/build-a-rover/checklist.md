@@ -27,13 +27,12 @@
 
 9. Congratulations! Your robot is complete!
 
----
 
 ##Programs
 
 Below is a list of programs loaded into your robot:
 
-| `Prgm` # | Description                                              |
+| Prgm   # | Description                                              |
 |---------:|:---------------------------------------------------------|
 |        1 | The rover makes sounds when you hit the bumpers.         |
 |        2 | It turns and backs away when you hit a bumper.           |
