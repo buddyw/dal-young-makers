@@ -138,7 +138,7 @@ function main {
 			#Device specified, just do it
 			echo Starting flash job on: $DEVICE
 			job_log="${CLASS_TMP}/$(basename ${DEVICE}).log"
-			do_flash $DEVICE >> $job_log
+			do_flash $DEVICE >> $job_log 2>&1
 			echo flash job complete...
 		else
 			#No Device Specified.  Let's make a list of devices.
@@ -153,7 +153,7 @@ function main {
 				for towerdev in $device_list; do
 					echo Starting flash job on: $towerdev
 					job_log="${CLASS_TMP}/$(basename ${towerdev}).log"
-					do_flash $towerdev >> $job_log &
+					do_flash $towerdev >> $job_log 2>&1 &
 				done
 				sleep 3
 				echo -n Waiting for flash jobs to complete...
