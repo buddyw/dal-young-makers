@@ -8,40 +8,6 @@ set -m
 FIRMWARE_URL="http://pbrick.info/wp-content/uploads/2013/10/fast0612.zip"
 FIRMWARE_FILE="fast0612.lgo"
 
-#Process command line params
-while [[ $# > 1 ]]
-do
-key="$1"
-
-case $key in
-	-d|--device)
-	DEVICE="$2"
-	shift
-	;;
-	-s|--skip-firmware)
-	SKIP_FIRMWARE=YES
-	;;
-	*)
-	#invalid parameter
-	display_help
-	;;
-esac
-shift
-done
-
-if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-	display_help
-fi
-
-CLASS_PATH="${1}"
-CLASS_TMP=${1%%/}/tmp
-
-	
-echo
-#echo CLASS_PATH = "${CLASS_PATH}"
-#echo DEVICE_NAME = "${DEVICE}"
-#echo SKIP_FIRMWARE = "${SKIP_FIRMWARE}"
-#echo FIRMWARE_URL = "${FIRMWARE_URL}"
 
 
 #FUNCTIONS:
@@ -176,5 +142,40 @@ function main {
 	echo Exiting...
 }
 
+#Process command line params
+while [[ $# > 1 ]]
+do
+key="$1"
+
+case $key in
+	-d|--device)
+	DEVICE="$2"
+	shift
+	;;
+	-s|--skip-firmware)
+	SKIP_FIRMWARE=YES
+	;;
+	*)
+	#invalid parameter
+	display_help
+	;;
+esac
+shift
+done
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	display_help
+fi
+
+CLASS_PATH="${1}"
+CLASS_TMP=${1%%/}/tmp
+
+	
+echo
+#echo CLASS_PATH = "${CLASS_PATH}"
+#echo DEVICE_NAME = "${DEVICE}"
+#echo SKIP_FIRMWARE = "${SKIP_FIRMWARE}"
+#echo FIRMWARE_URL = "${FIRMWARE_URL}"
 #call main function
+
 main
