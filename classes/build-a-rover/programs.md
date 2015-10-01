@@ -1,8 +1,8 @@
 [Dallas Young Makers Club](http://dallasyoungmakers.org/)
 
-#Make a Rover
+# Make a Rover
 
-##Programs
+## Programs
 
 Below is a list of programs loaded into your robot:
 
@@ -16,7 +16,7 @@ Below is a list of programs loaded into your robot:
 |        5 | It turns away from obstacles and tries not to get stuck. |
 
 
-##Programming
+## Programming
 
 All of the robot's programs are written in "Not Quite C" (called NQC for short).  This is a free and open source language and tool you can use to program these Lego RCX bricks. NQC is very similar to C.  C and C-like languages are very common and are used to program everything from robots and microwave ovens to desktop PCs and iPhone apps.
 

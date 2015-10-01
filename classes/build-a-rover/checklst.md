@@ -1,9 +1,9 @@
 [Dallas Young Makers Club](http://dallasyoungmakers.org/)
 
-#Make a Rover
+# Make a Rover
 
 
-##Checklist
+## Checklist
 
 1. Go through the parts list and make sure that you have all of the necessary pieces to build your robot.
 
