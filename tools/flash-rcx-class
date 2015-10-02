@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 #Bash script to program RCX's
 #Buddy Whittenburg 2015-09-29
 
@@ -107,8 +107,18 @@ function main {
 			do_flash $DEVICE >> $job_log 2>&1
 			echo flash job complete...
 		else
-			#No Device Specified.  Let's make a list of devices.
-			device_list=`ls /dev/usb/legousbtower*`
+			#No Device was specified, so let's make a list of devices.
+			#After further testing, we found that, while multiple
+			#Devices are listed as legousbtower[0-N], but each device
+			#merely references the first USB tower plugged in.
+			#This is unfortunate and means that we can't program
+			#multiple devices at once.
+			#
+			#I've added 'head -n 1' to the command so that we will
+			#only ever read the first device.  If the drivers are
+			#fixed in the future, this be can removed and multiple
+			#devices should (theoretically) be supported.
+			device_list=`ls /dev/usb/legousbtower* | head -n 1`
 			
 			#let's see what we got...
 			if [ -z $device_list ]; then
