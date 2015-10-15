@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------
-// Class program 1
+// Class program 2
 // ---------------------------------------------------------------
 // This program tests the lift on the forklift.  Simply press the
 // rear bumper to alternate raising and lower the fork.
@@ -156,6 +156,16 @@ task main ()
   SetSensor(SENSOR_2,SENSOR_LIGHT);
   SetSensor(SENSOR_3,SENSOR_LIGHT);
 
+  // Let's calibrate our fork so we know how to read the sensor.
+  calibrate_fork();
+
+  // let's also calibrate the load sensor so we know it's value
+  // when it's empty.
+  calibrate_load();
+
+  // Now let's lower the fork so we know what position it's in.
+  lower_fork();
+
   // Now we want this program to keep running until we stop it,
   // so we need a loop.  This is a "while" loop and will reapeat
   // eveything inside { } over and over again as long as 
@@ -163,11 +173,6 @@ task main ()
 
   // since true is always true, this next line will repeat what
   // is below it forever until you stop it.
-  calibrate_fork();
-  calibrate_load();
-
-  lower_fork();
-
   while (true)
 
     // the while loop starts here
@@ -182,11 +187,10 @@ task main ()
     // and it will run the block { } just below it.  "If" it 
     // doesn't equal 1, the brick will skip over the code block
     // that follows.
-
-
-    
     if (SENSOR_1 == 1)
+      // only do this block if the sensor is pressed
     {
+
       // let's check to see if the fork is lowered (position 1)
       if (fork_position == 1)
       {
