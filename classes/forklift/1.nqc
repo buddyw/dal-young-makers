@@ -1,0 +1,60 @@
+// ---------------------------------------------------------------
+// Class program 1
+// ---------------------------------------------------------------
+// This program tests drives the forklift.  It will drive forward 
+// continuously.
+
+// To start, anything after two slashes '//' is a comment that the 
+// brick will ignore.  These comments are to help you understand
+// what is happening in the program.
+
+// ---------------------------------------------------------------
+// This is the main task.  It is part of every program and tells 
+// the brick where to start.
+// ---------------------------------------------------------------
+task main ()
+
+// curly braces { } group things together.  This tells the brick
+// that everything between the { below and } at the end is part
+// of main.  This is called a code block.
+
+{
+  
+  // To start, we are going to tell the Brick what kind of sensors 
+  // we are using so it knows how to read them.
+
+  // Here we are saying, that a touch sensor (SENSOR_TOUCH) is 
+  // plugged into the "1" sensor plug "SENSOR_1: on top of the 
+  // brick.
+  SetSensor(SENSOR_1,SENSOR_TOUCH);
+
+  // We have light sensors plugged into "2" and "3", so let's
+  // tell the brick about that as well.
+  SetSensor(SENSOR_2,SENSOR_LIGHT);
+  SetSensor(SENSOR_3,SENSOR_LIGHT);
+
+  calibrate_fork();
+  calibrate_load();
+
+  lower_fork();
+
+  // Now we want this program to keep running until we stop it,
+  // so we need a loop.  This is a "while" loop and will reapeat
+  // eveything inside { } over and over again as long as 
+  // what is in parentheses ( ) next to it is true.
+
+  // since true is always true, this next line will repeat what
+  // is below it forever until you stop it.
+  while (true)
+
+    // the while loop starts here
+  {
+
+    // Turn on the motor!
+    OnFwd(OUT_C);
+
+  // while loop ends here, back to the top!
+  }
+
+// main ends here. This is the end of the program!
+}
