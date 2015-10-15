@@ -1,0 +1,209 @@
+// ---------------------------------------------------------------
+// Class program 4
+// ---------------------------------------------------------------
+// This program does the following:
+// 1. Lowers the fork
+// 2. Drives forward until it sees a load
+// 3. Raises the fork
+// 4. Drives backwards until it hits something
+// 5. lowers the fork
+
+// To start, anything after two slashes '//' is a comment that the 
+// brick will ignore.  These comments are to help you understand
+// what is happening in the program.
+
+// ---------------------------------------------------------------
+// These are special values that we may need to tweak if our design
+// changes, so we will define them at the top to make things
+// easier.  Whenever you see the NAME in the middle, it will be
+// replaced with the number on the right automatically.
+// ---------------------------------------------------------------
+#define FORK_RAISE_TIME 80
+#define LOAD_DETECTION 5
+
+// ---------------------------------------------------------------
+// These are our variables.  Each of these can store a number
+// that we can change as our program runs.
+// ---------------------------------------------------------------
+int fork_position;
+int ground_light_calibration;
+int fork_light_calibration;
+
+// ---------------------------------------------------------------
+// This subroutine raises the fork and calibrates the light
+// sensor that makes sure the forklift is on the ground.
+// ---------------------------------------------------------------
+sub calibrate_fork()
+{
+  // let's raise the fork so we know it's off the ground
+  // before we calibrate it
+  OnFwd(OUT_A);
+
+  // We will wait our standard FORK_RAISE_TIME from the 
+  // #define above.
+  Wait(FORK_RAISE_TIME);
+
+  // Turn off the motor raising the fork!
+  Off(OUT_A);
+
+  //save the sensor value so we can use it as a refernce
+  ground_light_calibration = SENSOR_3;
+
+//This is the end of the calibrate_fork subroutine
+}
+
+// ---------------------------------------------------------------
+// This subroutine calibrates the sensor that detects when the
+// fork is loaded.  This should be run while ther's nothing on
+// or in front of the fork.
+// ---------------------------------------------------------------
+sub calibrate_load()
+{
+  // read and save the current sensor value
+  fork_light_calibration = SENSOR_2;
+
+//This is the end of the calibrate_load subroutine
+}
+
+// ---------------------------------------------------------------
+// This subroutine lowers the fork
+// ---------------------------------------------------------------
+sub lower_fork()
+{
+
+  // Lower the fork until Sensor 3 drops below our calibration
+  // level.  Sensor 3 will drop as it gets farther from the
+  // ground (raises up because the fork is too low)
+  while (SENSOR_3 >= ( ground_light_calibration - 1 ))
+  {
+    // turn motor on (lowering)
+    OnRev(OUT_A);
+  }
+
+  // Now we know our fork is too low, because the lift raised
+  // lets raise the fork until it's normal (at the calibrated
+  // level).
+  while (SENSOR_3 < ground_light_calibration)
+  {
+    // turn motor on (raising)
+    OnFwd(OUT_A);
+  }
+
+  // Wait another 50 ms just so the fork will be a bit higher
+  Wait(5);
+
+  // turn off the motor
+  Off(OUT_A);
+
+  // Let's save our fork postion now that it's lowered
+  fork_position = 1;
+
+  // Let's play sound #2
+  PlaySound(2); 
+
+  // let's wait a second for the sound to play
+  Wait(100);
+
+//This is the end of the lower_fork subroutine
+}
+
+// ---------------------------------------------------------------
+// This subroutine raises the fork
+// ---------------------------------------------------------------
+sub raise_fork()
+{
+  // Turn on the motor to raise the fork
+  OnFwd(OUT_A);
+
+  // Wait for our FORK_RAISE_TIME (see #define above)
+  Wait(FORK_RAISE_TIME);
+
+  // Turn off the motor
+  Off(OUT_A);
+
+  // Let's save our fork postion now that it's raised
+  fork_position = 2;
+
+  // Let's play sound #3
+  PlaySound(3); 
+
+  // let's wait a second for the sound to play
+  Wait(100);
+
+//This is the end of the raise_fork subroutine
+}
+
+// ---------------------------------------------------------------
+// This is the main task.  It is part of every program and tells 
+// the brick where to start.
+// ---------------------------------------------------------------
+task main ()
+
+// curly braces { } group things together.  This tells the brick
+// that everything between the { below and } at the end is part
+// of main.  This is called a code block.
+
+{
+  
+  // To start, we are going to tell the Brick what kind of sensors 
+  // we are using so it knows how to read them.
+
+  // Here we are saying, that a touch sensor (SENSOR_TOUCH) is 
+  // plugged into the "1" sensor plug "SENSOR_1: on top of the 
+  // brick.
+
+  SetSensor(SENSOR_1,SENSOR_TOUCH);
+
+  // We have light sensors plugged into "2" and "3", so let's
+  // tell the brick about that as well.
+
+  //sensor for fork
+  SetSensor(SENSOR_2,SENSOR_LIGHT);
+
+  //sensor for ground
+  SetSensor(SENSOR_3,SENSOR_LIGHT);
+
+  // Let's calibrate our fork so we know how to read the sensor.
+  calibrate_fork();
+
+  // let's also calibrate the load sensor so we know it's value
+  // when it's empty.
+  calibrate_load();
+
+  // STEP 1:  Lowers the fork
+  lower_fork();
+
+  // STEP 2:  Drives forward until it sees a load
+  while (SENSOR_2 <= (fork_light_calibration + LOAD_DETECTION))
+  {
+
+    // drive forward
+    OnFwd(OUT_C);
+  }
+
+  // stop the motor
+  Off(OUT_C);
+
+  // STEP 3:  Raises the fork
+  raise_fork();
+
+  // STEP 4:  Drives backwards until it hits something
+
+
+  // loop until sensor 1 is pressed
+  while (SENSOR_1 == 0)
+  {
+
+    // drive backward
+    OnRev(OUT_C);
+
+  // while loop ends here, back to the beginning!
+  }
+
+  Off(OUT_C);
+
+  // STEP 5:  lower the fork
+  lower_fork();
+
+// main ends here. This is the end of the program!
+}
