@@ -47,5 +47,11 @@ task main ()
   // while loop ends here, back to the top!
   }
 
+  // We are out of the loop, so someone pressed the button.
+
+  // Let's turn off the motor!
+  Off(OUT_C);
+ 
+
 // main ends here. This is the end of the program!
 }
