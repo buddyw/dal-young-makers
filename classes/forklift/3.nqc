@@ -1,12 +1,8 @@
 // ---------------------------------------------------------------
-// Class program 1
+// Class program 3
 // ---------------------------------------------------------------
-// This program tests drives the forklift.  It will drive forward 
-// continuously.
+// This program drives backward until the rear bumper is pressed.
 
-// To start, anything after two slashes '//' is a comment that the 
-// brick will ignore.  These comments are to help you understand
-// what is happening in the program.
 
 // ---------------------------------------------------------------
 // This is the main task.  It is part of every program and tells 
@@ -38,15 +34,15 @@ task main ()
   // eveything inside { } over and over again as long as 
   // what is in parentheses ( ) next to it is true.
 
-  // since true is always true, this next line will repeat what
-  // is below it forever until you stop it.
-  while (true)
+  // now this will loop over and over again as long as SENSOR_1
+  // is 0.  Sensor changes to 1 whenever you press it.
+  while (SENSOR_1 == 0)
 
     // the while loop starts here
   {
 
-    // Turn on the motor!
-    OnFwd(OUT_C);
+    // Turn on the motor in reverse!
+    OnRev(OUT_C);
 
   // while loop ends here, back to the top!
   }
