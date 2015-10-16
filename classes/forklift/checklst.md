@@ -37,6 +37,4 @@
 
 11. You can press `Prgm` to switch between different programs (see "Programs" section) and press `Run` to start and stop each one.
 
-12. Congratulations! Your robot is complete!
-
-13. In order to get a badge, all you need to do is show us the completed robot and return all of the pieces in the Ziplock bag at the end of class.
+12. In order to get a badge, all you need to do is show us the completed robot and return all of the pieces in the Ziplock bag at the end of class.
