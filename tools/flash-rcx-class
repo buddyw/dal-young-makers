@@ -103,8 +103,14 @@ function main {
 		if [ $DEVICE ]; then
 			#Device specified, just do it
 			echo Starting flash job on: $DEVICE
-			job_log="${CLASS_TMP}/$(basename ${DEVICE}).log"
-			do_flash $DEVICE >> $job_log 2>&1
+			
+			#Disabled logging since it's not very useful with
+			#only 1 IR device supported at a time.
+			#job_log="${CLASS_TMP}/$(basename ${DEVICE}).log"
+			#do_flash $DEVICE >> $job_log 2>&1
+
+			do_flash $DEVICE 
+
 			echo flash job complete...
 		else
 			#No Device was specified, so let's make a list of devices.
@@ -128,8 +134,13 @@ function main {
 				#iterate the list and start a job for each tower
 				for towerdev in $device_list; do
 					echo Starting flash job on: $towerdev
-					job_log="${CLASS_TMP}/$(basename ${towerdev}).log"
-					do_flash $towerdev >> $job_log 2>&1 &
+
+					#Disabled logging since it's not very useful with
+					#only 1 IR device supported at a time.
+					#job_log="${CLASS_TMP}/$(basename ${towerdev}).log"
+					#do_flash $towerdev >> $job_log 2>&1 &
+
+					do_flash $towerdev &
 				done
 				sleep 3
 				echo -n Waiting for flash jobs to complete...
