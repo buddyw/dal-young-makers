@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 #Bash script to program RCX's
 #Buddy Whittenburg 2015-09-29
 
@@ -14,16 +14,18 @@ FIRMWARE_FILE="fast0612.lgo"
 
 #Displays help dialog and exits
 function display_help {
-	echo Usage [OPTION]... [PATH]
-	echo Program RCX units with firmware and programs for class.
-	echo [PATH] must be specified as the full path to the class folder
-	echo
-	echo Arguments:
-	echo   -d, --device NAME	Specify IR interface for programming.
-	echo				Device is optional. We use all devices 
-	echo 				by default
-	echo   -s, --skip-firmware	Skip firmware
-	echo   -h, --help		Display this help message
+	echo "Usage [OPTION]... [PATH]                                         "
+	echo "Program RCX units with firmware and programs for class."
+	echo "[PATH] must be specified as the full path to the class folder"
+	echo 
+	echo "Arguments:"
+	echo "  -d, --device NAME        Specify IR interface for programming. "
+	echo "                           Device is optional. We use all devices"
+	echo "                           by default."
+	echo "  -s, --skip-firmware      Skip firmware upload."
+	echo "  -[1..5]                  Write only 1 specified program number."
+	echo "                           Also, --skip-firmware is implied."
+	echo "  -h, --help               Display this help message."
 	exit
 }
 
@@ -75,12 +77,16 @@ function do_flash {
 		echo "Skipping Firmware Flash..."
 	fi
 
-	#Attempt to load each [1-5].nqc file in the class folder
-	write_nqc_program $tower_device 5 "${CLASS_PATH%%/}/5.nqc"
-	write_nqc_program $tower_device 4 "${CLASS_PATH%%/}/4.nqc"
-	write_nqc_program $tower_device 3 "${CLASS_PATH%%/}/3.nqc"
-	write_nqc_program $tower_device 2 "${CLASS_PATH%%/}/2.nqc"
-	write_nqc_program $tower_device 1 "${CLASS_PATH%%/}/1.nqc"
+	if [ -z $WRITE_PROGRAM ]; then
+		#Attempt to load each [1-5].nqc file in the class folder
+		write_nqc_program $tower_device 5 "${CLASS_PATH%%/}/5.nqc"
+		write_nqc_program $tower_device 4 "${CLASS_PATH%%/}/4.nqc"
+		write_nqc_program $tower_device 3 "${CLASS_PATH%%/}/3.nqc"
+		write_nqc_program $tower_device 2 "${CLASS_PATH%%/}/2.nqc"
+		write_nqc_program $tower_device 1 "${CLASS_PATH%%/}/1.nqc"
+	else
+		write_nqc_program $tower_device $WRITE_PROGRAM "${CLASS_PATH%%/}/${WRITE_PROGRAM}.nqc"
+	fi
 }
 
 
@@ -176,6 +182,26 @@ case $key in
 	-s|--skip-firmware)
 	SKIP_FIRMWARE=YES
 	;;
+	-1)
+	SKIP_FIRMWARE=YES
+	WRITE_PROGRAM=1
+	;;
+	-2)
+	SKIP_FIRMWARE=YES
+	WRITE_PROGRAM=2
+	;;
+	-3)
+	SKIP_FIRMWARE=YES
+	WRITE_PROGRAM=3
+	;;
+	-4)
+	SKIP_FIRMWARE=YES
+	WRITE_PROGRAM=4
+	;;
+	-5)
+	SKIP_FIRMWARE=YES
+	WRITE_PROGRAM=5
+	;;
 	*)
 	#invalid parameter
 	display_help
@@ -196,6 +222,7 @@ echo
 #echo CLASS_PATH = "${CLASS_PATH}"
 #echo DEVICE_NAME = "${DEVICE}"
 #echo SKIP_FIRMWARE = "${SKIP_FIRMWARE}"
+#echo WRITE_FIRMWARE = "${WRITE_FIRMWARE}"
 #echo FIRMWARE_URL = "${FIRMWARE_URL}"
 #call main function
 
