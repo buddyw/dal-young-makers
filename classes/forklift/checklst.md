@@ -2,7 +2,6 @@
 
 # Make a Forklift
 
-
 ## Checklist
 
 1. Go through the pictures in the assembly instructions and make sure that you have all of the necessary parts to build your robot.
@@ -22,7 +21,6 @@
    2. Unplug the motor's `C` cable from the top of the brick.
    3. Rotate the `C` plug a different direction and plug it back in.
    4. Press `Run` again to re-test the track.
-   5. Repeat the steps until the wheels are moving forward.
 
 8. Now let's test the fork.  Press `Prgm` until the number `2` appears to the far right.
 
@@ -33,7 +31,6 @@
    2. Unplug the motor's `A` cable from the top of the brick.
    3. Rotate the `A` plug a different direction and plug it back in.
    4. Press `Run` again to re-test the track.
-   5. Repeat the steps until the fork raises and lowers to the ground and stops.
 
 11. You can press `Prgm` to switch between different programs (see "Programs" section) and press `Run` to start and stop each one.
 
