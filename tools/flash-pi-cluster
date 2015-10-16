@@ -1,0 +1,16 @@
+#!/bin/bash 
+# Script to launch programming script over SSH to clients on the local network.
+
+
+#I want to use Tmux as a command center showing progress of each batch here:
+
+tmux new-session -d 'vim'
+tmux split-window -v 'python'
+tmux new-window 'htop'
+tmux -2 attach-session -d 
+
+#Let's get a list of hosts with nmap:
+nmap --open -p22 localhost
+
+#We can use git to clone to ~/src on each slave
+git clone https://github.com/buddyw/dal-young-makers.git ~/src
