@@ -24,4 +24,4 @@ Open Source means that the computer instructions that make tools and robots work
 
 You can learn more about NQC programming at the [Bricxcc SourceForge Page](http://bricxcc.sourceforge.net/nqc/).
 
-You can view the source code for your robot's programs on this class's [github repository](https://github.com/buddyw/dal-young-makers/tree/master/classes/build-a-rover).
+You can view the source code for your robot's programs on this class's [github repository](https://github.com/buddyw/dal-young-makers/tree/master/classes/forklift).

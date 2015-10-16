@@ -15,10 +15,10 @@
 
 5. Hold the robot so that its wheels can spin freely and press the red `Run` button.
 
-6. Make sure that the wheels are both turning the right way to make the robot move forward.
+6. Make sure that the wheels are turning the right way to make the robot move forward.
 
 7. If the wheels are spinning the wrong direction:
-   1. press the red `Run` button again to stop the robot.
+   1. Press the red `Run` button again to stop the robot.
    2. Unplug the motor's `C` cable from the top of the brick.
    3. Rotate the `C` plug a different direction and plug it back in.
    4. Press `Run` again to re-test the track.
@@ -39,4 +39,4 @@
 
 12. Congratulations! Your robot is complete!
 
-13. In order to get a badge, all you need to do is show us the completed robot and return all of the pieces in the ziplock bag at the end of class.
+13. In order to get a badge, all you need to do is show us the completed robot and return all of the pieces in the Ziplock bag at the end of class.
