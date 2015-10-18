@@ -1,0 +1,6 @@
+#!/bin/bash
+
+sudo apt-get update
+
+#install packages to generate documentation
+sudo apt-get install texlive-latex-base texlive-latex-recommended pandoc
