@@ -1,0 +1,3 @@
+#!/bin/bash
+
+pandoc -V links-as-notes -f markdown programs.md -o programs.pdf
