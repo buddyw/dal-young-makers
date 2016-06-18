@@ -1,0 +1,64 @@
+//Program 4
+// Go continuously and turn around whenever a sensor is hit
+
+task main()
+{
+  // First, let's tell the brick what kind of sensors we 
+  // are using:
+
+  SetSensor(SENSOR_1,SENSOR_TOUCH);
+  SetSensor(SENSOR_3,SENSOR_TOUCH);
+
+  // Now let's turn on both motors
+
+  OnFwd(OUT_A+OUT_C);
+  
+  // We want to loop forever!
+  while (true)
+  {
+    
+    // Check Sensor 1
+    if (SENSOR_1 == 1) 
+    {
+      // We hit something!  Back up!
+      OnRev(OUT_A+OUT_C); 
+      Wait(50);
+      
+      // Turn around!
+      OnFwd(OUT_A);
+      OnRev(OUT_C);
+      Wait(120);
+      
+      // Play sound #4!
+      PlaySound(4);
+      Wait(100);
+
+      // Continue on our way!
+      OnFwd(OUT_A+OUT_C);
+    }
+
+    // Do the same thing for Sensor 3
+    if (SENSOR_3 == 1)
+    {
+      // We hit something!  Back up!
+      OnRev(OUT_A+OUT_C); 
+      Wait(50);
+      
+      // Turn around!
+      OnFwd(OUT_A);
+      OnRev(OUT_C);
+      Wait(120);
+
+      // Play sound #4!
+      PlaySound(4);
+      Wait(100);
+
+      // Continue on our way!
+      OnFwd(OUT_A+OUT_C);
+    }
+
+  // End of Loop
+  }
+
+// End of main program!
+}

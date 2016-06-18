@@ -1,3 +1,13 @@
 #!/bin/bash
 
-pandoc -V links-as-notes -f markdown programs.md -o programs.pdf
+BASE_PATH=`dirname $0`
+#MARKDOWN_FILES=`find ${BASE_PATH}/../ -regex ".*/classes/[^/]+/[^/]+\.md"`
+echo "Found markdown files for processing..."
+#echo "$MARKDOWN_FILES"
+#find ${BASE_PATH}/../ -regex ".*/classes/[^/]+/[^/]+\.md" -exec pandoc -V links-as-notes -f markdown {} -o "${BASE_PATH}/../doc/${BASE_PATH//.*\/classes\/([^\/]+)\/([^\/]+)\.[mM][dD]/\1-\2\.pdf}" \;
+#find ${BASE_PATH}/../ -regex ".*/classes/[^/]+/[^/]+\.md" -exec  echo "${BASE_PATH}/../doc/${//.*\/classes\/([^\/]+)\/([^\/]+)\.[mM][dD]/\1-\2\.pdf}" \;
+#find ${BASE_PATH}/../ -regex ".*/classes/[^/]+/[^/]+\.md" -exec echo "File: `echo {} | sed -r -e 's/.*\/classes\/\([^\/]+\)\/\([^\/]+\)\.[mM][dD]/\1-\2\.pdf/g'`" \;
+find ${BASE_PATH}/../ -regex ".*/classes/[^/]+/[^/]+\.md" -exec echo "File: $(echo {} | sed 's/md/pdf/g')" \;
+echo "File: `echo "./../classes/build-a-rover/programs.md" | sed 's/md/pdf/g'`" \;
+#pandoc -V links-as-notes -f markdown programs.md -o programs.pdf
+#echo ${BASE_PATH}/../doc/${BASE_PATH//.*\/classes\/([^\/]+)\/([^\/]+)\.[mM][dD]/\1-\2\.pdf}

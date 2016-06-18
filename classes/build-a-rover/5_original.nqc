@@ -11,7 +11,7 @@ task main()
 
   // Now let's turn on both motors
 
-  OnFwd(OUT_A+OUT_B+OUT_C);
+  OnFwd(OUT_A+OUT_C);
   
   // We want to loop forever!
   while (true)
