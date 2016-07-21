@@ -1,8 +1,8 @@
 #!/bin/sh
-
 while :
 do
 	#prompt for mode
+	echo dialog_1
 	dialog --menu "RCX Flash Tool" 10 30 3 1 flash\ full\ firmware 2 write\ programs\ only 3 shutdown\ system 2>m_temp
 
 	#OK
@@ -30,6 +30,7 @@ do
 			#full firmware flash
 			if [ "$_flashmode" = "1" ]
 			then
+				_lastcmd="$(dirname $0)/flash-rcx-class $_flashdir"
 				$(dirname $0)/flash-rcx-class $_flashdir
 				sleep 5
 			fi
@@ -37,6 +38,7 @@ do
 			#program only flash
 			if [ "$_flashmode" = "2" ]
 			then
+				_lastcmd="$(dirname $0)/flash-rcx-class -s $_flashdir"
 				$(dirname $0)/flash-rcx-class -s $_flashdir
 				sleep 5
 			fi
