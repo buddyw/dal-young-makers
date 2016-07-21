@@ -14,7 +14,8 @@ do
 		#Shutdown selected
 		if [ "$_flashmode" = "3" ]
 		then
-			sudo shutdown
+			sync
+			sudo shutdown -h now
 			sleep 5
 			break
 		fi
