@@ -1,0 +1,40 @@
+#!/bin/sh
+
+while :
+do
+	dialog --menu "RCX Flash Tool" 10 30 3 1 flash\ full\ firmware 2 write\ programs\ only 2>m_temp
+
+	#OK
+	if [ "$?" = "0" ]
+	then
+		_flashmode=$(cat m_temp)
+		rm -f m_temp
+		dialog --title "Choose program directory..." --dselect $(dirname $0)/../classes/ 10 30 2>d_temp
+
+		if [ "$?" = "0" ]
+		then
+			_flashdir=$(cat d_temp)
+			rm -f d_temp
+
+			if [ "$_flashmode" = "1" ]
+			then
+				./flash-rcx-class $_flashdir
+				sleep 5
+			fi
+
+			if [ "$_flashmode" = "2" ]
+			then
+				./flash-rcx-class -s $_flashdir
+				sleep 5
+			fi
+		fi
+
+	else
+		echo "User Canceled"
+		rm -f m_temp
+		rm -f d_temp
+		break
+	fi
+done
+
+

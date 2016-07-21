@@ -3,4 +3,4 @@
 sudo apt-get update
 
 #install packages to flash firmware
-sudo apt-get install nqc unzip wget
+sudo apt-get install nqc unzip wget dialog
