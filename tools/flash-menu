@@ -18,13 +18,13 @@ do
 
 			if [ "$_flashmode" = "1" ]
 			then
-				./flash-rcx-class $_flashdir
+				$(dirname $0)/flash-rcx-class $_flashdir
 				sleep 5
 			fi
 
 			if [ "$_flashmode" = "2" ]
 			then
-				./flash-rcx-class -s $_flashdir
+				$(dirname $0)/flash-rcx-class -s $_flashdir
 				sleep 5
 			fi
 		fi
