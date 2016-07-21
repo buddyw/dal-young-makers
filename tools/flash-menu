@@ -2,12 +2,23 @@
 while :
 do
 	#prompt for mode
-	echo dialog_1
 	dialog --menu "RCX Flash Tool" 10 30 3 1 flash\ full\ firmware 2 write\ programs\ only 3 shutdown\ system 2>m_temp
 
 	#OK
 	if [ "$?" = "0" ]
 	then
+		_classcount=0
+		_classlist=""
+		for D in $(dirname $0)/../classes/*; do
+			if [ -d "${D}" ];
+			then
+				_classcount=$(($_classcount+1))
+				_classlist="$_classlist $_classcount $(basename ${D})"
+			fi
+		done
+		echo $_classlist
+		sleep 5
+
 		_flashmode=$(cat m_temp)
 		rm -f m_temp
 		
@@ -20,19 +31,30 @@ do
 			break
 		fi
 
-		dialog --title "Choose program directory..." --dselect $(dirname $0)/../classes/ 10 30 2>d_temp
+		dialog --menu "Choose program directory..." 10 30 3 $_classlist 2>d_temp
 
 		if [ "$?" = "0" ]
 		then
-			_flashdir=$(cat d_temp)
+			_flashdir=$(dirname $0)/../classes/$(cat d_temp)
 			rm -f d_temp
 
 			#full firmware flash
 			if [ "$_flashmode" = "1" ]
 			then
+				echo $_flashdir
 				_lastcmd="$(dirname $0)/flash-rcx-class $_flashdir"
 				$(dirname $0)/flash-rcx-class $_flashdir
 				sleep 5
+				while :
+				do
+					dialog --yesno "Program another brick with the same settings?" 10 30
+					if [ "$?" = "1" ]
+					then
+						break
+					fi
+					$_lastcmd
+					sleep 5
+				done
 			fi
 
 			#program only flash
@@ -41,6 +63,16 @@ do
 				_lastcmd="$(dirname $0)/flash-rcx-class -s $_flashdir"
 				$(dirname $0)/flash-rcx-class -s $_flashdir
 				sleep 5
+				while :
+				do
+					dialog --yesno "Program another brick with the same settings?" 10 30
+					if [ "$?" = "1" ]
+					then
+						break
+					fi
+					$_lastcmd
+					sleep 5
+				done
 			fi
 		fi
 
