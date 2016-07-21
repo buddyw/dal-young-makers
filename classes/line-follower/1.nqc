@@ -1,0 +1,92 @@
+//Class program 1
+//  This program watches sensor 1 and 3 and plays sounds whenever 
+//  they are pressed.
+
+// To start, anything after two slashes '//' is a comment that the 
+// brick will ignore.  These comments are to help you understand
+// what is happening in the program.
+
+
+// This is the main task.  It is part of every program and tells 
+// the brick where to start.
+
+task main ()
+
+// curly braces { } group things together.  This tells the brick
+// that everything between the { below and } at the end is part
+// of main.  This is called a code block.
+
+{
+
+  // To start, we are going to tell the Brick what kind of sensors 
+  // we are using so it knows how to read them.
+
+  // Here we are saying, that a touch sensor (SENSOR_TOUCH) is 
+  // plugged into the "1" sensor plug "SENSOR_1: on top of the 
+  // brick.
+
+  SetSensor(SENSOR_1,SENSOR_TOUCH);
+
+  // We have the same type of sensor plugged into "3", so let's
+  // tell the brick about that as well.
+
+  SetSensor(SENSOR_3,SENSOR_TOUCH);
+
+  // Now we want this program to keep running until we stop it,
+  // so we need a loop.  This is a "while" loop and will reapeat
+  // eveything inside { } over and over again as long as 
+  // what is in parentheses ( ) next to it is true.
+
+  // since true is always true, this next line will repeat what
+  // is below it forever until you stop it.
+
+  while (true)
+
+    // the while loop starts here
+  {
+
+    // Now we want to see if any of our sensor has been pressed.
+    // whenever a sensor is pressed, it is equal to 1.  When no
+    // one is pressing it, it is equal to 0
+
+    // This "if" statement lets us check to see if SENSOR_1
+    // equals "==" 1.  If it does some is pressing the sensor
+    // and it will run the block { } just below it.  "If" it 
+    // doesn't equal 1, the brick will skip over the code block
+    // that follows.
+
+    if (SENSOR_1 == 1)
+    {
+
+      // if sensor was pressed, let's play sound #2!
+
+      PlaySound(2); 
+
+      // let's wait a second for the sound to play
+
+      Wait(100);
+    }
+
+    // If the sensor wasn't pressed, we will skip to here, after 
+    // the block { }
+
+
+    // Now let's do the exact same thing, except we will check 
+    // SENSOR_3 instead of SENSOR_1)
+
+    if (SENSOR_3 == 1)
+    {
+
+      // Let's play Sound #3 for this one instead of sound #2
+
+      PlaySound(3); 
+      Wait(100);
+    }
+
+    //the while loop ends here, so go back to the start!
+
+  }
+
+// main ends here. This is the end of the program!
+
+}

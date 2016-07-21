@@ -1,0 +1,58 @@
+//Program 2
+// Move away if a sensor gets hit
+
+task main()
+{
+  // First, let's tell the brick what kind of sensors we 
+  // are using:
+
+  SetSensor(SENSOR_1,SENSOR_TOUCH);
+  SetSensor(SENSOR_3,SENSOR_TOUCH);
+
+  // We want to loop forever!
+  while (true)
+  {
+    
+    // Check Sensor 1
+    if (SENSOR_1 == 1)
+    {
+      // Something touched us, back away!
+      OnRev(OUT_A);
+      Wait(50);
+
+      // Go straight back a bit further.
+      OnRev(OUT_A+OUT_C); 
+      Wait(50);
+      
+      // Stop!
+      Off(OUT_A+OUT_C);
+      
+      // Play sound #5!
+      PlaySound(5);
+      Wait(100);
+    }
+
+    // Do the same thing for Sensor 3
+    if (SENSOR_3 == 1)
+    {
+      // Something touched us, back away!
+      OnRev(OUT_C);
+      Wait(50);
+
+      // Go straight back a bit further.
+      OnRev(OUT_A+OUT_C); 
+      Wait(50);
+
+      // Stop!
+      Off(OUT_A+OUT_C);
+      
+      // Play sound #5!
+      PlaySound(5);
+      Wait(100);
+    }
+
+  // End of Loop
+  }
+
+// End of main program!
+}

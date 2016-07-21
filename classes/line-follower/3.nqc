@@ -1,0 +1,40 @@
+//Program 3
+// move in spirals!
+
+// This is a variable called turn_delay.  We can store
+// numbers (integers) inside of this variable!
+// We will use turn_delay to measure how long to wait
+// between turns in our spiral.
+
+int turn_delay;
+
+// The main program
+task main()
+{
+
+  // We are going to store 0 in turn_delay.
+  turn_delay = 0;
+
+  // We want to loop (and sprial) forever.
+  while(true)
+  {
+    //turn on both motors full speed ahead.
+    OnFwd(OUT_A+OUT_C);
+
+    // wait for however long turn delay says to wait.
+    Wait(turn_delay);
+
+    // Make the right track go backwards to turn right.
+    OnRev(OUT_C); 
+    
+    // Turn for half a second
+    Wait(50);
+
+    // Increase turn_delay by 5 so next time around we go straight for longer.
+    turn_delay = turn_delay + 5;
+
+  // End of Loop, go back to the top!
+  }
+
+// End of main program!
+}

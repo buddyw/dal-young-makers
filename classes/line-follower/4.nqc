@@ -1,0 +1,71 @@
+//Program 4
+// Go continuously and turn around whenever a sensor is hit
+
+task main()
+{
+  int light_1_delta;
+  int light_3_delta;
+  // First, let's tell the brick what kind of sensors we 
+  // are using:
+
+  SetSensor(SENSOR_2,SENSOR_LIGHT);
+  SetSensor(SENSOR_1,SENSOR_LIGHT);
+  SetSensor(SENSOR_3,SENSOR_LIGHT);
+
+  // Now let's turn on both motors
+
+  OnFwd(OUT_A+OUT_C);
+  
+  // We want to loop forever!
+  while (true)
+  {
+    
+    // Check Sensor 1
+    if (SENSOR_2 == 1) 
+    {
+      // We hit something!  Back up!
+      OnRev(OUT_A+OUT_C); 
+      Wait(50);
+      
+      // Turn around!
+      OnFwd(OUT_A);
+      OnRev(OUT_C);
+      Wait(120);
+      
+      // Play sound #4!
+      PlaySound(4);
+      Wait(100);
+
+      // Continue on our way!
+      OnFwd(OUT_A+OUT_C);
+    }
+
+    // Do the same thing for Sensor 3
+
+    // Find the difference between the reference sensor(2) and the front light sensors
+    light_1_delta ||= SENSOR_2 - SENSOR_1;
+    light_3_delta ||= SENSOR_2 - SENSOR_3;
+    if ((light_1_delta >= 8 ) || (light_3_delta >= 8))
+    {
+      // We hit something!  Back up!
+      OnRev(OUT_A+OUT_C); 
+      Wait(50);
+      
+      // Turn around!
+      OnFwd(OUT_A);
+      OnRev(OUT_C);
+      Wait(120);
+
+      // Play sound #4!
+      PlaySound(4);
+      Wait(100);
+
+      // Continue on our way!
+      OnFwd(OUT_A+OUT_C);
+    }
+
+  // End of Loop
+  }
+
+// End of main program!
+}

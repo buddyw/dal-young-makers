@@ -1,0 +1,94 @@
+//Program 5
+// Go continuously and turn whenever a sensor is hit
+
+task main()
+{
+  // First, let's tell the brick what kind of sensors we 
+  // are using:
+
+  SetSensor(SENSOR_1,SENSOR_TOUCH);
+  SetSensor(SENSOR_3,SENSOR_TOUCH);
+
+  // Now let's turn on both motors
+
+  OnFwd(OUT_A+OUT_C);
+  
+  // We want to loop forever!
+  while (true)
+  {
+    
+    // Check Sensor 1
+    if (SENSOR_1 == 1)
+    {
+      // We hit the wall!  Back up!
+      OnRev(OUT_A+OUT_C); 
+      Wait(50);
+      
+      // now just start 1 motor to turn away from the 
+      // sensor
+      OnFwd(OUT_A);
+      OnRev(OUT_C);
+      Wait(70);
+
+      // Pick a random number between 1 and 10.  If it's less 
+      // than 2, play a different sound and keep turning for 
+      // an extra second and a half.  This can keep us from 
+      // getting stuck in a corner doing the same pattern
+      // over and over again.
+      if (Random(10) < 2)
+      {
+        PlaySound(5);
+        Wait(140);
+      }
+
+      //Stop the motors
+      Off(OUT_A+OUT_C);
+      
+      //Play sound #3!
+      PlaySound(3);
+      Wait(100);
+
+      // Continue on our way!
+      OnFwd(OUT_A+OUT_C);
+    }
+
+    // Do the same thing for Sensor 3
+    if (SENSOR_3 == 1)
+    {
+      // We hit the wall!  Back up!
+      OnRev(OUT_A+OUT_C); 
+      Wait(50);
+      
+      // now just start 1 motor to turn away from the 
+      // sensor
+      OnFwd(OUT_C);
+      OnRev(OUT_A);
+      Wait(70);
+
+      // Pick a random number between 1 and 10.  If it's less 
+      // than 2, play a different sound and keep turning for 
+      // an extra second and a half.  This can keep us from 
+      // getting stuck in a corner doing the same pattern
+      // over and over again.
+      if (Random(10) < 2)
+      {
+        PlaySound(5);
+        Wait(140);
+      }
+
+      //Stop the motors
+      Off(OUT_A+OUT_C);
+
+      //Play sound #2!
+      PlaySound(2);
+      Wait(100);
+
+      // Continue on our way!
+      OnFwd(OUT_A+OUT_C);
+    }
+
+  // End of Loop
+  }
+
+// End of main program!
+}
