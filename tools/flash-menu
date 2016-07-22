@@ -16,8 +16,8 @@ do
 				_classlist="$_classlist $_classcount $(basename ${D})"
 			fi
 		done
-		echo $_classlist
-		sleep 5
+		#echo $_classlist
+		#sleep 5
 
 		_flashmode=$(cat m_temp)
 		rm -f m_temp
@@ -35,7 +35,7 @@ do
 
 		if [ "$?" = "0" ]
 		then
-			_flashdir=$(dirname $0)/../classes/$(cat d_temp)
+			_flashdir=$(dirname $0)/../classes/$(echo $_classlist | sed 's/.*\([^0-9]\|^\)'"$(cat d_temp)"'\ \([^ ]*\)\(\ \|$\).*/\2/')
 			rm -f d_temp
 
 			#full firmware flash
@@ -85,3 +85,4 @@ do
 done
 
 
+#s/.*\([^0-9]\|^\)5\ \([^ ]*\)\(\ \|$\).*/\2/
