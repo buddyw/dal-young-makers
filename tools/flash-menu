@@ -31,7 +31,7 @@ do
 			break
 		fi
 
-		dialog --menu "Choose program directory..." 10 30 3 $_classlist 2>d_temp
+		dialog --menu "Choose program to load..." 10 30 3 $_classlist 2>d_temp
 
 		if [ "$?" = "0" ]
 		then
