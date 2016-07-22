@@ -11,7 +11,7 @@ Robotics with H8/300 microcontrollers and Lego Mindstorms RCX smart bricks
   * 2 Motors
   * 4 Connector cables
   * 2 Touch sensors
-  * 1 [RCX Brick](../master/doc/preparing_bricks.md)
+  * 1 [RCX Brick](../../doc/preparing_bricks.md)
 3. Demonstrate 5 preloaded brick programs with sensors and motors connected
 4. Have students assemble their robots
 5. After they are assembled, help them test the robot 

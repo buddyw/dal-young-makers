@@ -6,7 +6,7 @@
 
 If your bricks are already programmed from a previous class, all you need to do is follow the steps below to verify that they are still ready for use.
 
-1. Press the `on/off` button on the unit and observe that it powers on and starts counting down.  If it isn't counting, the firmware may be corrupted or the batteries may be too low and you will need to reflash the brick.
+1. Press the `on/off` button on the unit and observe that it powers on and starts counting up.  If it isn't counting, the firmware may be corrupted or the batteries may be too low and you will need to reflash the brick.
 2. If the brick is counting, press `view` 7 times to go past each sensor and motor port and display the battery voltage.  If the voltage is less than 8.4v then the batteries should be replaced.  See replacing batteries below.
 3. Your brick is ready for use!
 
