@@ -1,6 +1,6 @@
 [Dallas Young Makers Club](http://dallasyoungmakers.org/)
 
-# Make a Rover
+# Build a Rover (Teacher)
 
 Robotics with H8/300 microcontrollers and Lego Mindstorms RCX smart bricks
 
@@ -20,11 +20,11 @@ Robotics with H8/300 microcontrollers and Lego Mindstorms RCX smart bricks
 
 After the rover has been built there are a few common problems to check for.  
 
-1. Set the rover to program 1 and press `run`
-2. Press each of the bumpers individually and see if the robot makes a sound.
+1. Press `Prgm` until the rover is on program 1 and press `Run`
+2. Press each of the bumpers individually and confirm that they each make a sound.
   * If there is no sound, make sure cables are secure and plugged into ports 1 and 3 on the brick
-3. Set the rover to program 5.
-4. Lift the rover so that it's tracks are can spin freely and press `run`
+3. Press `Prgm` until the rover is on program 5.
+4. Lift the rover so that it's tracks are can spin freely and press `Run`
   * If one side isn't spinning, check that cables and gears are connected on that side and that they are using ports A and C on the brick.
-  * If one side is spinning the wrong direction, disconnect the cable from the brick on that side, rotate it 1/4 turn, and reconnect it.  Repeat this until both tracks are moving the correct direction.
+  * If one side is spinning the wrong direction, disconnect the motor cable from the brick on that side, rotate it 1/4 turn, and reconnect it.  Repeat this until both tracks are moving the correct (forward) direction.
 5. Check that the gears on either side of the rover with curved teeth are facing the correct direction, if they are facing the wrong way they will pop out of place easily.
