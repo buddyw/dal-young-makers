@@ -1,6 +1,6 @@
 # dal-young-makers
 
-##Installation
+## Installation
 
 The steps below allow you to flash RCX on any Debian based linux machine.
 
