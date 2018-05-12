@@ -129,8 +129,17 @@ class RCXMenu:
             return 'Not Found!'
 
     def shutdown_system(self):
-        pass
+        self.disable()
+        lcd.clear()
+        lcd.write('Shutting Down...')
+        time.sleep(5)
+        lcd.clear()
+        for led in range(6):
+            backlight.graph_set_led_state(led, 0)
+        backlight.rgb(0, 0, 0)
+        subprocess.call(["sudo", "shutdown", "-h", "now"])
 
+    #show about info
     def show_about(self):
         self.backflag = True
         lcd.clear()
@@ -138,6 +147,7 @@ class RCXMenu:
         lcd.write('    rcxflash    ')
         lcd.write('      v0.1      ')
 
+    #show Hostname and IP addresses
     def show_network(self):
         self.backflag = True
         eth0 = self.get_addr('eth0')
