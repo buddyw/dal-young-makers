@@ -2,32 +2,38 @@
 import sys
 import os
 import time
+import fcntl
+import socket
+import struct
 import subprocess
-import signal                                                                                                           
-import dothat.backlight as backlight                                                                                    
-import dothat.lcd as lcd                                                                                                
-import dothat.touch as nav 
+import signal
+import dothat.backlight as backlight
+import dothat.lcd as lcd
+import dothat.touch as nav
 
 
 #This class defines the menu and tracks menu state
 class RCXMenu:
     def __init__(self):
-        self.menu = { 'MAIN' : {0 : 'Flash firmware', 1 : 'Flash programs', 2 : 'Util', 3 : 'Shutdown'},
-                'Shutdown' : {0 : 'Yes', 1 : 'No'},
+        self.menu = {
+                'MAIN' : {0 : 'Flash firmware', 1 : 'Flash programs', 2 : 'Util', 3 : 'Shutdown'},
+                'Shutdown' : {0 : 'No', 1 : 'Yes'},
                 'Util' : {0 : 'Network', 1 : 'Update', 2 : 'About'}
+                }
+
+        self.commands = {
+                'MAINUtilNetwork' : self.show_network,
+                'MAINUtilAbout' : self.show_about,
+                'MAINShutdownYes' : self.shutdown_system
                 }
 
         self.menustack = []
         self.current = "MAIN"
         self.pos = 0
-        self.bflag_up = False
-        self.bflag_down = False
-        self.bflag_left = False
-        self.bflag_right = False
-        self.bflag_back = False
-        self.bflag_select = False
+        self.backflag = False
         self.active = False
         self.load_custom_chars()
+        self.blv = 255
 
     def load_custom_chars(self):
         down_arrow = [0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x0a, 0x04]
@@ -36,37 +42,56 @@ class RCXMenu:
  
 
     def button_up(self):
-        self.bflag_up = True
         time.sleep(.1)
 
-        if self.active:
+        if self.active and not self.backflag:
             if self.pos > 0:
                 self.pos -= 1
             self.refresh_lcd()
 
     def button_down(self):
-        self.bflag_down = True
         time.sleep(.1)
 
-        if self.active:
+        if self.active and not self.backflag:
             if self.pos+1 in self.menu[self.current].keys():
                 self.pos += 1
             self.refresh_lcd()
 
     def button_left(self):
-        self.bflag_left = True
         time.sleep(.1)
+        if self.active and not self.backflag:
+            if self.menustack != []:
+                self.current,self.pos=self.menustack.pop()
+                self.refresh_lcd()
+        else:
+            if self.backflag:
+                self.backflag = False
+                self.refresh_lcd()
 
     def button_right(self):
-        self.bflag_right = True
         time.sleep(.1)
+        if self.active and not self.backflag:
+            if self.menu[self.current][self.pos] in self.menu.keys():
+                self.menustack.append((self.current,self.pos))
+                self.current = self.menu[self.current][self.pos]
+                self.pos = 0
+                self.refresh_lcd()
+            else:
+                if self.get_menu_path() in self.commands.keys():
+                    self.commands[self.get_menu_path()]()
+
+    def get_menu_path(self):
+        return "".join([x[0] for x in self.menustack]) + self.current + self.menu[self.current][self.pos]
 
     def button_back(self):
-        self.bflag_back = True
         time.sleep(.1)
+        if self.blv == 0:
+            self.blv = 255
+        else:
+            self.blv = 0
+        backlight.rgb(self.blv, self.blv, self.blv)
     
     def button_select(self):
-        self.bflag_select = True
         time.sleep(.1)
 
     def refresh_lcd(self):
@@ -92,6 +117,51 @@ class RCXMenu:
             lcd.set_cursor_position(15, 2)
             lcd.write(chr(0))
 
+    def get_addr(self,ifname):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            return socket.inet_ntoa(fcntl.ioctl(
+                s.fileno(),
+                0x8915,  # SIOCGIFADDR
+                struct.pack('256s', ifname[:15].encode('utf-8'))
+            )[20:24])
+        except IOError:
+            return 'Not Found!'
+
+    def shutdown_system(self):
+        pass
+
+    def show_about(self):
+        self.backflag = True
+        lcd.clear()
+        lcd.write('dal-young-makers')
+        lcd.write('    rcxflash    ')
+        lcd.write('      v0.1      ')
+
+    def show_network(self):
+        self.backflag = True
+        eth0 = self.get_addr('eth0')
+        wlan0 = self.get_addr('wlan0')
+        host = socket.gethostname()
+
+        lcd.clear()
+
+        lcd.set_cursor_position(0,0)
+        lcd.write('{}'.format(host))
+
+        lcd.set_cursor_position(0,1)
+        if eth0 != 'Not Found!':
+            lcd.write(eth0)
+        else:
+            lcd.write('eth0 {}'.format(eth0))
+
+        lcd.set_cursor_position(0,2)
+        if wlan0 != 'Not Found!':
+            lcd.write(wlan0)
+        else:
+            lcd.write('wlan0 {}'.format(wlan0))
+
+	
 
 
     def enable(self):
@@ -151,7 +221,6 @@ def main(argv):
     @nav.on(nav.CANCEL)
     def handle_cancel(ch, evt):
         print("Cancel pressed!")
-        backlight.rgb(0, 0, 0)
         rmenu.button_back()
 
     rmenu.enable()
