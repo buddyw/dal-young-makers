@@ -1,0 +1,163 @@
+#!/usr/bin/env python
+import sys
+import os
+import time
+import subprocess
+import signal                                                                                                           
+import dothat.backlight as backlight                                                                                    
+import dothat.lcd as lcd                                                                                                
+import dothat.touch as nav 
+
+
+#This class defines the menu and tracks menu state
+class RCXMenu:
+    def __init__(self):
+        self.menu = { 'MAIN' : {0 : 'Flash firmware', 1 : 'Flash programs', 2 : 'Util', 3 : 'Shutdown'},
+                'Shutdown' : {0 : 'Yes', 1 : 'No'},
+                'Util' : {0 : 'Network', 1 : 'Update', 2 : 'About'}
+                }
+
+        self.menustack = []
+        self.current = "MAIN"
+        self.pos = 0
+        self.bflag_up = False
+        self.bflag_down = False
+        self.bflag_left = False
+        self.bflag_right = False
+        self.bflag_back = False
+        self.bflag_select = False
+        self.active = False
+        self.load_custom_chars()
+
+    def load_custom_chars(self):
+        down_arrow = [0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x0a, 0x04]
+        
+        lcd.create_char(0, down_arrow)
+ 
+
+    def button_up(self):
+        self.bflag_up = True
+        time.sleep(.1)
+
+        if self.active:
+            if self.pos > 0:
+                self.pos -= 1
+            self.refresh_lcd()
+
+    def button_down(self):
+        self.bflag_down = True
+        time.sleep(.1)
+
+        if self.active:
+            if self.pos+1 in self.menu[self.current].keys():
+                self.pos += 1
+            self.refresh_lcd()
+
+    def button_left(self):
+        self.bflag_left = True
+        time.sleep(.1)
+
+    def button_right(self):
+        self.bflag_right = True
+        time.sleep(.1)
+
+    def button_back(self):
+        self.bflag_back = True
+        time.sleep(.1)
+    
+    def button_select(self):
+        self.bflag_select = True
+        time.sleep(.1)
+
+    def refresh_lcd(self):
+        base = 0
+        if self.pos > 2:
+            base = self.pos - 2
+        lcd.clear()
+        for row in range(base, base+3):
+            if row in self.menu[self.current].keys():
+                if row == self.pos:
+                    lcd.write("*")
+                else:
+                    lcd.write(" ")
+                lcd.write(self.menu[self.current][row].ljust(14))
+                lcd.write(" ")
+        #write sroll up symbol to the top left
+        if base > 0:
+            lcd.set_cursor_position(15, 0)
+            lcd.write('^')
+
+        #write sroll down symbol to the bottom left
+        if base + 3 in self.menu[self.current].keys():
+            lcd.set_cursor_position(15, 2)
+            lcd.write(chr(0))
+
+
+
+    def enable(self):
+        self.active = True
+        self.refresh_lcd()
+
+    def disable(self):
+        self.active = False
+        
+
+#initialize all LCD and LEDs
+def init_display():
+    lcd.clear()
+    backlight.rgb(255, 255, 255)
+
+    lcd.set_cursor_position(0, 1)
+    lcd.write(" RCX Programmer ")
+
+    backlight.graph_set_led_duty(0, 1)
+    for led in range(6):
+        backlight.graph_set_led_state(led, 0)
+    
+#main menu
+def main(argv):
+
+    init_display()
+
+    rmenu = RCXMenu()
+    
+    #define callbacks to buttons
+    @nav.on(nav.UP)
+    def handle_up(ch, evt):
+        print("Up pressed!")
+        rmenu.button_up()
+
+    @nav.on(nav.DOWN)
+    def handle_down(ch, evt):
+        print("Down pressed!")
+        rmenu.button_down()
+
+    @nav.on(nav.LEFT)
+    def handle_left(ch, evt):
+        print("Left pressed!")
+        rmenu.button_left()
+
+    @nav.on(nav.RIGHT)
+    def handle_right(ch, evt):
+        print("Right pressed!")
+        rmenu.button_right()
+
+    @nav.on(nav.BUTTON)
+    def handle_button(ch, evt):
+        print("Button pressed!")
+        rmenu.button_select()
+
+
+    @nav.on(nav.CANCEL)
+    def handle_cancel(ch, evt):
+        print("Cancel pressed!")
+        backlight.rgb(0, 0, 0)
+        rmenu.button_back()
+
+    rmenu.enable()
+    # Prevent the script exiting!
+    signal.pause()
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
+
