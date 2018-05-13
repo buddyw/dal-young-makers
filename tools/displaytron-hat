@@ -384,7 +384,7 @@ class RCXMenu:
         lcd.clear()
         lcd.write("pulling latest  ")
         lcd.write("from git repo...")
-        ret = self.p_wait(['git','push'])
+        ret = self.p_wait(['git','pull'])
         if ret == 0:
             lcd.write("Update Succeded!")
         else:
