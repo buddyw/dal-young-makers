@@ -384,9 +384,11 @@ class RCXMenu:
         lcd.clear()
         lcd.write("pulling latest  ")
         lcd.write("from git repo...")
-        subprocess.call(['git','pull'])
-        lcd.clear()
-        lcd.write("Update Complete!")
+        ret = self.p_wait(['git','push'])
+        if ret == 0:
+            lcd.write("Update Succeded!")
+        else:
+            lcd.write("Update Failed!")
         self.set_backflag()
         self.enable()
     
@@ -509,7 +511,7 @@ class RCXMenu:
             #rotate the active LED
             graph_state = (graph_state << 1) + (graph_state >> backlight.NUM_LEDS) & 1
             #wait 1 second before checking again
-            time.sleep(1)
+            time.sleep(.5)
 
         self.set_bar_graph(0)
         return process.poll()
@@ -526,7 +528,8 @@ class RCXMenu:
     #enable menu keys
     def enable(self):
         self.active = True
-        self.refresh_lcd()
+        if not self.backflag:
+            self.refresh_lcd()
 
     #disable menu keys
     def disable(self):
