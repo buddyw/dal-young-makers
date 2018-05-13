@@ -10,36 +10,63 @@ import signal
 import dothat.backlight as backlight
 import dothat.lcd as lcd
 import dothat.touch as nav
+from functools import partial
 
 
 #This class defines the menu and tracks menu state
 class RCXMenu:
     def __init__(self):
-        self.menu = {
-                'MAIN' : {0 : 'Flash firmware', 1 : 'Flash programs', 2 : 'Util', 3 : 'Shutdown'},
-                'Shutdown' : {0 : 'No', 1 : 'Yes'},
-                'Util' : {0 : 'Network', 1 : 'Update', 2 : 'About'}
-                }
-
-        self.commands = {
-                'MAINUtilNetwork' : self.show_network,
-                'MAINUtilAbout' : self.show_about,
-                'MAINShutdownYes' : self.shutdown_system
-                }
-
+        self.backlight_status = "ON"
+        self.contrast = 40
+        self.brightness = 255
         self.menustack = []
         self.current = "MAIN"
         self.pos = 0
         self.backflag = False
         self.active = False
         self.load_custom_chars()
-        self.blv = 255
+        self.script_path = os.path.dirname(os.path.realpath(__file__))
+        self.class_path = os.path.realpath(self.script_path + '/../classes')
+        self.robot_type = ""
+        
+        self.menu = {
+                'MAIN' : {0 : 'Flash firmware', 1 : 'Flash programs', 2 : 'Settings', 3 : 'Shutdown'},
+                'Shutdown' : {0 : 'No', 1 : 'Yes'},
+                'Settings' : {0 : 'Robot Type', 1: 'Display', 2 : 'Network', 3 : 'Update', 4 : 'About'},
+                'Display'  : {0 : 'Backlight', 1 : 'Contrast', 2 : 'Bright'}
+                }
+        self.menu['Robot Type'] = self.get_dir_dict(self.class_path)
+
+        #Dictionary that maps commands to menu items
+        #Format: 'PathToMenuItem' : Function_to_call
+        self.commands = {
+                'MAINSettingsNetwork' : self.show_network,
+                'MAINSettingsAbout' : self.show_about,
+                'MAINShutdownYes' : self.shutdown_system,
+                'MAINSettingsDisplayBacklightleft' : self.toggle_backlight,
+                'MAINSettingsDisplayBacklightright' : self.toggle_backlight,
+                'MAINSettingsDisplayContrastleft' : self.decrease_contrast,
+                'MAINSettingsDisplayContrastright' : self.increase_contrast,
+                'MAINSettingsDisplayBrightleft' : self.decrease_brightness,
+                'MAINSettingsDisplayBrightright' : self.increase_brightness,
+                }
+
+        #Dictionary that maps variables to menu items for display
+        self.variable_map = {
+                'MAINSettingsDisplayBright' : self.get_brightness,
+                'MAINSettingsDisplayContrast' : self.get_contrast,
+                'MAINSettingsDisplayBacklight' : self.get_backlight_status
+                }
+
+        #Add dictionary entries of partially applied functions to robot menu
+        for class_dir in self.menu['Robot Type'].values():
+            self.commands['MAINSettingsRobot Type' + class_dir] = partial(self.set_robot_type,class_dir)
+            self.variable_map['MAINSettingsRobot Type' + class_dir] = partial(self.is_robot_sel,class_dir)
 
     def load_custom_chars(self):
         down_arrow = [0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x0a, 0x04]
         
         lcd.create_char(0, down_arrow)
- 
 
     def button_up(self):
         time.sleep(.1)
@@ -60,6 +87,18 @@ class RCXMenu:
     def button_left(self):
         time.sleep(.1)
         if self.active and not self.backflag:
+            if self.get_menu_item_path()+'left' in self.commands.keys():
+                self.commands[self.get_menu_item_path()+'left']()
+
+    def button_right(self):
+        time.sleep(.1)
+        if self.active and not self.backflag:
+            if self.get_menu_item_path()+'right' in self.commands.keys():
+                self.commands[self.get_menu_item_path()+'right']()
+
+    def button_back(self):
+        time.sleep(.1)
+        if self.active and not self.backflag:
             if self.menustack != []:
                 self.current,self.pos=self.menustack.pop()
                 self.refresh_lcd()
@@ -67,8 +106,8 @@ class RCXMenu:
             if self.backflag:
                 self.backflag = False
                 self.refresh_lcd()
-
-    def button_right(self):
+    
+    def button_select(self):
         time.sleep(.1)
         if self.active and not self.backflag:
             if self.menu[self.current][self.pos] in self.menu.keys():
@@ -77,42 +116,116 @@ class RCXMenu:
                 self.pos = 0
                 self.refresh_lcd()
             else:
-                if self.get_menu_path() in self.commands.keys():
-                    self.commands[self.get_menu_path()]()
+                if self.get_menu_item_path() in self.commands.keys():
+                    self.commands[self.get_menu_item_path()]()
 
-    def get_menu_path(self):
-        return "".join([x[0] for x in self.menustack]) + self.current + self.menu[self.current][self.pos]
-
-    def button_back(self):
-        time.sleep(.1)
-        if self.blv == 0:
-            self.blv = 255
+    def toggle_backlight(self):
+        if self.backlight_status == 'ON':
+            self.backlight_status = 'OFF'
+            backlight.rgb(0, 0, 0)
         else:
-            self.blv = 0
-        backlight.rgb(self.blv, self.blv, self.blv)
-    
-    def button_select(self):
-        time.sleep(.1)
+            self.backlight_status = 'ON'
+            backlight.rgb(self.brightness, self.brightness, self.brightness)
+        self.refresh_lcd()
+
+    def set_robot_type(self,class_dir):
+        self.robot_type = class_dir
+
+    def is_robot_sel(self,class_dir):
+        if class_dir == self.robot_type:
+            return '*'
+        else:
+            return ' '
+
+    def decrease_contrast(self):
+        if self.contrast >= 5:
+            self.contrast -= 5
+            lcd.set_contrast(self.contrast)
+            self.refresh_lcd()
+
+    def increase_contrast(self):
+        if self.contrast <= 55:
+            self.contrast += 5
+            lcd.set_contrast(self.contrast)
+            self.refresh_lcd()
+
+    def decrease_brightness(self):
+        if self.brightness >= 5:
+            self.brightness -= 5
+            backlight.rgb(self.brightness, self.brightness, self.brightness)
+            self.refresh_lcd()
+
+    def increase_brightness(self):
+        if self.brightness <= 250:
+            self.brightness += 5
+            backlight.rgb(self.brightness, self.brightness, self.brightness)
+            self.refresh_lcd()
+
+    #returns a dictionary of directories for menus
+    def get_dir_dict(self,dir_name):
+        classes = [name for name in os.listdir(dir_name) if os.path.isdir(os.path.join(dir_name,name))]
+        dict_entries = zip(range(len(classes)),classes)
+        class_dict = {}
+        for entry in dict_entries:
+            class_dict[entry[0]]=entry[1]
+        return class_dict
+
+    #returns the full path to the current menu item.  Defaults to selected item.
+    def get_menu_item_path(self,row_num=-1):
+        if row_num == -1:
+            row_num = self.pos
+        return "".join([x[0] for x in self.menustack]) + self.current + self.menu[self.current][row_num]
+
+    #returns the full path to the current menu.
+    def get_menu_path(self):
+        return "".join([x[0] for x in self.menustack]) + self.current
+
+    def get_backlight_status(self):
+        return self.backlight_status
+
+    def get_brightness(self):
+        return self.brightness
+
+    def get_contrast(self):
+        return self.contrast
 
     def refresh_lcd(self):
         base = 0
         if self.pos > 2:
             base = self.pos - 2
         lcd.clear()
+
+        #print menu items:
         for row in range(base, base+3):
             if row in self.menu[self.current].keys():
                 if row == self.pos:
                     lcd.write("*")
+                    l_sel_chr='<'
+                    r_sel_chr='>'
                 else:
                     lcd.write(" ")
-                lcd.write(self.menu[self.current][row].ljust(14))
+                    l_sel_chr=' '
+                    r_sel_chr=' '
+
+                #insert variable in row if one is mapped
+                row_text = self.menu[self.current][row]
+                if self.get_menu_item_path(row) in self.variable_map.keys():
+                    row_var = str(self.variable_map[self.get_menu_item_path(row)]())
+                    desc_len = 14-2-len(row_var)
+                    row_text = row_text[0:desc_len].ljust(desc_len) + l_sel_chr + row_var + r_sel_chr
+                    row_text = row_text[0:14]
+                else:
+                    row_text = row_text[0:14]
+                    
+                lcd.write(row_text.ljust(14))
                 lcd.write(" ")
-        #write sroll up symbol to the top left
+
+        #write sroll up symbol to the top left if needed
         if base > 0:
             lcd.set_cursor_position(15, 0)
             lcd.write('^')
 
-        #write sroll down symbol to the bottom left
+        #write sroll down symbol to the bottom left if needed
         if base + 3 in self.menu[self.current].keys():
             lcd.set_cursor_position(15, 2)
             lcd.write(chr(0))
@@ -187,8 +300,11 @@ def init_display():
     lcd.clear()
     backlight.rgb(255, 255, 255)
 
-    lcd.set_cursor_position(0, 1)
+    lcd.set_cursor_position(0, 0)
+    lcd.lcd.double_height(1)
     lcd.write(" RCX Programmer ")
+    time.sleep(5)
+    lcd.lcd.double_height(0)
 
     backlight.graph_set_led_duty(0, 1)
     for led in range(6):
