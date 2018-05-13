@@ -12,6 +12,8 @@ import dothat.lcd as lcd
 import dothat.touch as nav
 from functools import partial
 
+#FIRMWARE_URL="http://pbrick.info/wp-content/uploads/2013/10/fast0612.zip"
+#FIRMWARE_FILE="fast0612.lgo"
 
 #This class defines the menu and tracks menu state
 class RCXMenu:
@@ -27,15 +29,38 @@ class RCXMenu:
         self.load_custom_chars()
         self.script_path = os.path.dirname(os.path.realpath(__file__))
         self.class_path = os.path.realpath(self.script_path + '/../classes')
-        self.robot_type = ""
+        self.firmware_path = os.path.realpath(self.script_path + '/../firmware')
+        self.tower_dev_path = '/dev/usb'
+        self.robot_type = "build-a-rover"
+        self.firmware_file = "fast0612.lgo"
+        self.tower_dev = "legousbtower0"
         
         self.menu = {
-                'MAIN' : {0 : 'Flash firmware', 1 : 'Flash programs', 2 : 'Settings', 3 : 'Shutdown'},
-                'Shutdown' : {0 : 'No', 1 : 'Yes'},
-                'Settings' : {0 : 'Robot Type', 1: 'Display', 2 : 'Network', 3 : 'Update', 4 : 'About'},
-                'Display'  : {0 : 'Backlight', 1 : 'Contrast', 2 : 'Bright'}
+                'MAIN' : {
+                    0 : 'Flash firmware',
+                    1 : 'Flash programs', 
+                    2 : 'Settings', 
+                    3 : 'Shutdown'
+                    },
+                'Shutdown' : {
+                    0 : 'No', 
+                    1 : 'Yes'
+                    },
+                'Settings' : {
+                    0 : 'Robot Type',
+                    1 : 'Display',
+                    2 : 'Firmware',
+                    3 : 'IR Tower',
+                    4 : 'Network',
+                    5 : 'Update', 
+                    6 : 'About'
+                    },
+                'Display'  : {
+                    0 : 'Backlight', 
+                    1 : 'Contrast', 
+                    2 : 'Bright'
+                    }
                 }
-        self.menu['Robot Type'] = self.get_dir_dict(self.class_path)
 
         #Dictionary that maps commands to menu items
         #Format: 'PathToMenuItem' : Function_to_call
@@ -58,10 +83,28 @@ class RCXMenu:
                 'MAINSettingsDisplayBacklight' : self.get_backlight_status
                 }
 
+
+    #scans directories and updates menus based on files/devices
+    def scan_directories(self):
+
+        self.menu['Robot Type'] = self.get_dir_dict(self.class_path)
+        self.menu['Firmware'] = self.get_file_dict(self.firmware_path)
+        self.menu['IR Tower'] = self.get_file_dict(self.tower_dev_path)
+
         #Add dictionary entries of partially applied functions to robot menu
         for class_dir in self.menu['Robot Type'].values():
             self.commands['MAINSettingsRobot Type' + class_dir] = partial(self.set_robot_type,class_dir)
             self.variable_map['MAINSettingsRobot Type' + class_dir] = partial(self.is_robot_sel,class_dir)
+        
+        #Add dictionary entries of partially applied functions to firmware menu
+        for fw_file in self.menu['Firmware'].values():
+            self.commands['MAINSettingsFirmware' + fw_file] = partial(self.set_firmware_file,fw_file)
+            self.variable_map['MAINSettingsFirmware' + fw_file] = partial(self.is_firmware_sel,fw_file)
+
+        #Add dictionary entries of partially applied functions to IR Tower menu
+        for tower_dev in self.menu['IR Tower'].values():
+            self.commands['MAINSettingsIR Tower' + tower_dev] = partial(self.set_tower_dev,tower_dev)
+            self.variable_map['MAINSettingsIR Tower' + tower_dev] = partial(self.is_tower_sel,tower_dev)
 
     def load_custom_chars(self):
         down_arrow = [0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x0a, 0x04]
@@ -111,6 +154,7 @@ class RCXMenu:
         time.sleep(.1)
         if self.active and not self.backflag:
             if self.menu[self.current][self.pos] in self.menu.keys():
+                self.scan_directories()
                 self.menustack.append((self.current,self.pos))
                 self.current = self.menu[self.current][self.pos]
                 self.pos = 0
@@ -133,6 +177,24 @@ class RCXMenu:
 
     def is_robot_sel(self,class_dir):
         if class_dir == self.robot_type:
+            return '*'
+        else:
+            return ' '
+
+    def set_firmware_file(self,fw_file):
+        self.firmware_file = fw_file
+
+    def is_firmware_sel(self,fw_file):
+        if fw_file == self.firmware_file:
+            return '*'
+        else:
+            return ' '
+
+    def set_tower_dev(self,tower_dev):
+        self.tower_dev = tower_dev
+
+    def is_tower_sel(self,tower_dev):
+        if tower_dev == self.tower_dev:
             return '*'
         else:
             return ' '
@@ -170,6 +232,15 @@ class RCXMenu:
             class_dict[entry[0]]=entry[1]
         return class_dict
 
+    #returns a dictionary of files for menus
+    def get_file_dict(self,dir_name):
+        classes = os.listdir(dir_name)
+        dict_entries = zip(range(len(classes)),classes)
+        class_dict = {}
+        for entry in dict_entries:
+            class_dict[entry[0]]=entry[1]
+        return class_dict
+
     #returns the full path to the current menu item.  Defaults to selected item.
     def get_menu_item_path(self,row_num=-1):
         if row_num == -1:
@@ -189,6 +260,12 @@ class RCXMenu:
     def get_contrast(self):
         return self.contrast
 
+    def flash_fw(self):
+        self.enable=False
+        lcd.clear()
+        lcd.write('Flashing: ' + self.firmware)
+        subprocess(['nqc','-Susb:' + 'self.tower_dev', '-firmware', self.firmware_file])
+        
     def refresh_lcd(self):
         base = 0
         if self.pos > 2:
