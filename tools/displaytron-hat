@@ -381,14 +381,48 @@ class RCXMenu:
     #requires internet access
     def update_software(self):
         self.disable()
+
+        #Pull latest code from Git repo
         lcd.clear()
         lcd.write("pulling latest  ")
         lcd.write("from git repo...")
         ret = self.p_wait(['git','pull'])
+
+        if ret == 0:
+            lcd.write("Update Succeded!")
+            time.sleep(3)
+        else:
+            lcd.write("Update Failed!")
+            self.set_backflag()
+            self.enable()
+            return
+
+        #Update debian pkg repos
+        lcd.clear()
+        lcd.write("Updating Debian ")
+        lcd.write("pkg repos...    ")
+        ret = self.p_wait(['sudo','apt-get','update'])
+
+        if ret == 0:
+            lcd.write("Update Succeded!")
+            time.sleep(3)
+        else:
+            lcd.write("Update Failed!")
+            self.set_backflag()
+            self.enable()
+            return
+
+        #Install debian updates
+        lcd.clear()
+        lcd.write("Installing DEB  ")
+        lcd.write("pkg updates...  ")
+        ret = self.p_wait(['sudo','apt-get','--assume-yes','dist-upgrade'])
+
         if ret == 0:
             lcd.write("Update Succeded!")
         else:
             lcd.write("Update Failed!")
+
         self.set_backflag()
         self.enable()
     
