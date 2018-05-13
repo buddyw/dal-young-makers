@@ -18,23 +18,23 @@ from functools import partial
 #This class defines the menu and tracks menu state
 class RCXMenu:
     def __init__(self):
-        self.backlight_status = "ON"
-        self.contrast = 40
-        self.brightness = 255
-        self.menustack = []
-        self.current = "MAIN"
-        self.pos = 0
-        self.backflag = False
-        self.active = False
-        self.load_custom_chars()
+        self.backlight_status = "ON"         #bl status ON or OFF
+        self.contrast = 40                   #contrast 0-63
+        self.brightness = 255                #brightness 0-255
+        self.menustack = []                  #stack of previous menus
+        self.current = "MAIN"                #current Menu
+        self.pos = 0                         #selected item in cur menu
+        self.backflag = False                #Flag to wait for back button press
+        self.active = False                  #Flag to enable menu buttons
         self.script_path = os.path.dirname(os.path.realpath(__file__))
         self.class_path = os.path.realpath(self.script_path + '/../classes')
         self.firmware_path = os.path.realpath(self.script_path + '/../firmware')
-        self.tower_dev_path = '/dev/usb'
-        self.robot_type = "build-a-rover"
-        self.firmware_file = "fast0612.lgo"
-        self.tower_dev = "legousbtower0"
+        self.tower_dev_path = '/dev/usb'     #path to IR Tower Devices
+        self.robot_type = "build-a-rover"    #default robot type/class
+        self.firmware_file = "fast0612.lgo"  #default firmware
+        self.tower_dev = "legousbtower0"     #default IR Tower dev name
         
+        #dictionary of menus
         self.menu = {
                 'MAIN' : {
                     0 : 'Flash firmware',
@@ -43,6 +43,10 @@ class RCXMenu:
                     3 : 'Shutdown'
                     },
                 'Shutdown' : {
+                    0 : 'No', 
+                    1 : 'Yes'
+                    },
+                'Flash firmware' : {
                     0 : 'No', 
                     1 : 'Yes'
                     },
@@ -62,12 +66,18 @@ class RCXMenu:
                     }
                 }
 
-        #Dictionary that maps commands to menu items
+        #Dictionary that maps functions to menu items
         #Format: 'PathToMenuItem' : Function_to_call
+        #If you append left or right to the path, the
+        #function is called on left or right arrow keys
+        #otherwise, the function is called when the 
+        #select button is pressed
         self.commands = {
+                'MAINFlash firmwareYes' : self.flash_fw,
+                'MAINShutdownYes' : self.shutdown_system,
                 'MAINSettingsNetwork' : self.show_network,
                 'MAINSettingsAbout' : self.show_about,
-                'MAINShutdownYes' : self.shutdown_system,
+                'MAINSettingsUpdate' : self.update_software,
                 'MAINSettingsDisplayBacklightleft' : self.toggle_backlight,
                 'MAINSettingsDisplayBacklightright' : self.toggle_backlight,
                 'MAINSettingsDisplayContrastleft' : self.decrease_contrast,
@@ -76,93 +86,144 @@ class RCXMenu:
                 'MAINSettingsDisplayBrightright' : self.increase_brightness,
                 }
 
-        #Dictionary that maps variables to menu items for display
+        #Dictionary that maps variables to menu items for inline display
         self.variable_map = {
                 'MAINSettingsDisplayBright' : self.get_brightness,
                 'MAINSettingsDisplayContrast' : self.get_contrast,
                 'MAINSettingsDisplayBacklight' : self.get_backlight_status
                 }
 
+        self.load_custom_chars()
+        self.update_dynamic_menus()
 
-    #scans directories and updates menus based on files/devices
-    def scan_directories(self):
 
+    #scans directories and updates dynamic menus based on files/devices
+    def update_dynamic_menus(self):
+
+        #Populate menus based on available files/folders/devices
         self.menu['Robot Type'] = self.get_dir_dict(self.class_path)
         self.menu['Firmware'] = self.get_file_dict(self.firmware_path)
         self.menu['IR Tower'] = self.get_file_dict(self.tower_dev_path)
 
-        #Add dictionary entries of partially applied functions to robot menu
+        #Here's where the magic happens.  We are going through each dynamic
+        #menu item and assigning an inline variable function to show if the
+        #function is selected or not (will show '*' for inline var if selected).  
+        #We are also assigning a function to change the setting if selected.  
+        #These functions are partially applied with the menu item
+
+        #Create and assign functions for Robot Type dynamic menu
         for class_dir in self.menu['Robot Type'].values():
             self.commands['MAINSettingsRobot Type' + class_dir] = partial(self.set_robot_type,class_dir)
             self.variable_map['MAINSettingsRobot Type' + class_dir] = partial(self.is_robot_sel,class_dir)
         
-        #Add dictionary entries of partially applied functions to firmware menu
+        #Create and assign functions for Firmware dynamic menu
         for fw_file in self.menu['Firmware'].values():
             self.commands['MAINSettingsFirmware' + fw_file] = partial(self.set_firmware_file,fw_file)
             self.variable_map['MAINSettingsFirmware' + fw_file] = partial(self.is_firmware_sel,fw_file)
 
-        #Add dictionary entries of partially applied functions to IR Tower menu
+        #Create and assign functions for IR Tower dynamic menu
         for tower_dev in self.menu['IR Tower'].values():
             self.commands['MAINSettingsIR Tower' + tower_dev] = partial(self.set_tower_dev,tower_dev)
             self.variable_map['MAINSettingsIR Tower' + tower_dev] = partial(self.is_tower_sel,tower_dev)
 
+    #create custom characters in the LCD
     def load_custom_chars(self):
         down_arrow = [0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x0a, 0x04]
         
         lcd.create_char(0, down_arrow)
 
+    #function to handle button up press
     def button_up(self):
+        #debounce delay
         time.sleep(.1)
 
+        #don't do anything if buttons are disabled
+        #or if we are waiting on the back button
         if self.active and not self.backflag:
+            #scroll menu up 1 if possible
             if self.pos > 0:
                 self.pos -= 1
             self.refresh_lcd()
 
     def button_down(self):
+        #debounce delay
         time.sleep(.1)
 
+        #don't do anything if buttons are disabled
+        #or if we are waiting on the back button
         if self.active and not self.backflag:
+            #scroll menu down 1 if possible
             if self.pos+1 in self.menu[self.current].keys():
                 self.pos += 1
             self.refresh_lcd()
 
     def button_left(self):
+        #debounce delay
         time.sleep(.1)
+
+        #don't do anything if buttons are disabled
+        #or if we are waiting on the back button
         if self.active and not self.backflag:
+            #look for 'left' btn function mapped to 
+            #current menu item and execute it
             if self.get_menu_item_path()+'left' in self.commands.keys():
                 self.commands[self.get_menu_item_path()+'left']()
 
     def button_right(self):
+        #debounce delay
         time.sleep(.1)
+
+        #don't do anything if buttons are disabled
+        #or if we are waiting on the back button
         if self.active and not self.backflag:
+            #look for 'right' btn function mapped to 
+            #current menu item and execute it
             if self.get_menu_item_path()+'right' in self.commands.keys():
                 self.commands[self.get_menu_item_path()+'right']()
 
     def button_back(self):
+        #debounce delay
         time.sleep(.1)
+
+        #don't do anything if buttons are disabled
         if self.active and not self.backflag:
             if self.menustack != []:
                 self.current,self.pos=self.menustack.pop()
                 self.refresh_lcd()
         else:
+            #clear back flag and refresh menu
             if self.backflag:
                 self.backflag = False
                 self.refresh_lcd()
     
     def button_select(self):
+        #debounce delay
         time.sleep(.1)
+
+        #don't do anything if buttons are disabled
+        #or if we are waiting on the back button
         if self.active and not self.backflag:
+
+            #see if there's another menu for item selected
             if self.menu[self.current][self.pos] in self.menu.keys():
-                self.scan_directories()
+
+                #refresh dynamic menus in case something has changed
+                self.update_dynamic_menus()
+
+                #put the current menu and position on the stack
                 self.menustack.append((self.current,self.pos))
+
+                #move to the new menu
                 self.current = self.menu[self.current][self.pos]
                 self.pos = 0
+
                 self.refresh_lcd()
             else:
+                #if there's no submenu, check for mapped functions to exec
                 if self.get_menu_item_path() in self.commands.keys():
                     self.commands[self.get_menu_item_path()]()
 
+    #toggle the backlight on and off and update status variable
     def toggle_backlight(self):
         if self.backlight_status == 'ON':
             self.backlight_status = 'OFF'
@@ -172,58 +233,78 @@ class RCXMenu:
             backlight.rgb(self.brightness, self.brightness, self.brightness)
         self.refresh_lcd()
 
+    #set class/robot type to directory name
     def set_robot_type(self,class_dir):
         self.robot_type = class_dir
 
+    #return '*' if directory name is selected
+    #otherwise return ' '
     def is_robot_sel(self,class_dir):
         if class_dir == self.robot_type:
             return '*'
         else:
             return ' '
 
+    #set firmware file name
     def set_firmware_file(self,fw_file):
         self.firmware_file = fw_file
 
+    #return '*' if firmware file is selected
+    #otherwise return ' '
     def is_firmware_sel(self,fw_file):
         if fw_file == self.firmware_file:
             return '*'
         else:
             return ' '
 
+    #set IR tower device name
     def set_tower_dev(self,tower_dev):
         self.tower_dev = tower_dev
 
+    #return '*' if IR Tower device is selected
+    #otherwise return ' '
     def is_tower_sel(self,tower_dev):
         if tower_dev == self.tower_dev:
             return '*'
         else:
             return ' '
 
+    #decrease LCD contrast by 5 to minimum of 0
     def decrease_contrast(self):
         if self.contrast >= 5:
             self.contrast -= 5
             lcd.set_contrast(self.contrast)
             self.refresh_lcd()
 
+    #Increase LCD contrast by 5 to max of 60
+    #(can actually go to 63, but, meh)
     def increase_contrast(self):
         if self.contrast <= 55:
             self.contrast += 5
             lcd.set_contrast(self.contrast)
             self.refresh_lcd()
 
+    #decrease LCD contrast by 5 to minimum of 0
     def decrease_brightness(self):
         if self.brightness >= 5:
             self.brightness -= 5
             backlight.rgb(self.brightness, self.brightness, self.brightness)
             self.refresh_lcd()
 
+    #increase LCD contrast by 5 to max of 255
     def increase_brightness(self):
         if self.brightness <= 250:
             self.brightness += 5
             backlight.rgb(self.brightness, self.brightness, self.brightness)
             self.refresh_lcd()
 
-    #returns a dictionary of directories for menus
+    #returns a dictionary of directories in a 
+    # directory for dynamic menus
+    #  {
+    #      0 : 'Directory 1'
+    #      1 : 'Directory 2'
+    #      ... etc.
+    #  }
     def get_dir_dict(self,dir_name):
         classes = [name for name in os.listdir(dir_name) if os.path.isdir(os.path.join(dir_name,name))]
         dict_entries = zip(range(len(classes)),classes)
@@ -232,7 +313,13 @@ class RCXMenu:
             class_dict[entry[0]]=entry[1]
         return class_dict
 
-    #returns a dictionary of files for menus
+    #returns a dictionary of files in a
+    # directory for dynamic menus
+    #  {
+    #      0 : 'File 1'
+    #      1 : 'File 2'
+    #      ... etc.
+    #  }
     def get_file_dict(self,dir_name):
         classes = os.listdir(dir_name)
         dict_entries = zip(range(len(classes)),classes)
@@ -241,40 +328,80 @@ class RCXMenu:
             class_dict[entry[0]]=entry[1]
         return class_dict
 
-    #returns the full path to the current menu item.  Defaults to selected item.
+    #returns the full menu path to the current menu item.  Defaults to selected item.
     def get_menu_item_path(self,row_num=-1):
         if row_num == -1:
             row_num = self.pos
         return "".join([x[0] for x in self.menustack]) + self.current + self.menu[self.current][row_num]
 
-    #returns the full path to the current menu.
+    #returns the full menu path to the current menu.
     def get_menu_path(self):
         return "".join([x[0] for x in self.menustack]) + self.current
 
+    #returns backlight status
     def get_backlight_status(self):
         return self.backlight_status
 
+    #returns brightness setting
     def get_brightness(self):
         return self.brightness
 
+    #returns contrast setting
     def get_contrast(self):
         return self.contrast
 
+    #flashes filmware and programs to RCX based on settings
     def flash_fw(self):
-        self.enable=False
+        self.disable()
         lcd.clear()
         lcd.write('Flashing: ' + self.firmware)
-        subprocess(['nqc','-Susb:' + 'self.tower_dev', '-firmware', self.firmware_file])
+        ret=self.p_wait(['nqc','-Susb:' + 'self.tower_dev', '-firmware', self.firmware_file])
+
+        if ret == 0:
+            lcd.write('Flash Succeded!')
+            time.sleep(3)
+            self.flash_class()
+        else:
+            lcd.write('Flash Failed!')
+
+        self.set_backflag()
+        self.enable()
         
+    #flashes a single program to the RCX
+    def flash_prog(self,program_number,nqc_file):
+        pass
+
+    #flashes all programs in class/robot type
+    #folder based on settings
+    def flash_class(self):
+        for prog_num in range(1,5):
+            pass
+    
+    #Updates software on device
+    #requires internet access
+    def update_software(self):
+        self.disable()
+        lcd.clear()
+        lcd.write("pulling latest  ")
+        lcd.write("from git repo...")
+        subprocess.call(['git','pull'])
+        lcd.clear()
+        lcd.write("Update Complete!")
+        self.set_backflag()
+        self.enable()
+    
+    #refreshes LCD with current menu state
     def refresh_lcd(self):
         base = 0
+        #adjust base of menu to fit 3 line screen
         if self.pos > 2:
             base = self.pos - 2
         lcd.clear()
 
-        #print menu items:
+        #print up to 3 menu items:
         for row in range(base, base+3):
             if row in self.menu[self.current].keys():
+                #if row is selected, add chrs...
                 if row == self.pos:
                     lcd.write("*")
                     l_sel_chr='<'
@@ -284,29 +411,33 @@ class RCXMenu:
                     l_sel_chr=' '
                     r_sel_chr=' '
 
-                #insert variable in row if one is mapped
                 row_text = self.menu[self.current][row]
+
+                #insert variable in row_text if one is mapped
                 if self.get_menu_item_path(row) in self.variable_map.keys():
                     row_var = str(self.variable_map[self.get_menu_item_path(row)]())
                     desc_len = 14-2-len(row_var)
                     row_text = row_text[0:desc_len].ljust(desc_len) + l_sel_chr + row_var + r_sel_chr
                     row_text = row_text[0:14]
                 else:
+                    #limit size to fit LCD
                     row_text = row_text[0:14]
                     
+                #expand with whitespace and write
                 lcd.write(row_text.ljust(14))
                 lcd.write(" ")
 
-        #write sroll up symbol to the top left if needed
+        #write sroll up symbol to the top left if there are rows above
         if base > 0:
             lcd.set_cursor_position(15, 0)
             lcd.write('^')
 
-        #write sroll down symbol to the bottom left if needed
+        #write sroll down symbol to the bottom left if there are rows below
         if base + 3 in self.menu[self.current].keys():
             lcd.set_cursor_position(15, 2)
             lcd.write(chr(0))
 
+    #get ip address based on interface name
     def get_addr(self,ifname):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -318,6 +449,8 @@ class RCXMenu:
         except IOError:
             return 'Not Found!'
 
+    #shutdown system
+    #you may need to add a NOPASSWD line to sudo config
     def shutdown_system(self):
         self.disable()
         lcd.clear()
@@ -331,7 +464,7 @@ class RCXMenu:
 
     #show about info
     def show_about(self):
-        self.backflag = True
+        self.set_backflag()
         lcd.clear()
         lcd.write('dal-young-makers')
         lcd.write('    rcxflash    ')
@@ -339,7 +472,7 @@ class RCXMenu:
 
     #show Hostname and IP addresses
     def show_network(self):
-        self.backflag = True
+        self.set_backflag()
         eth0 = self.get_addr('eth0')
         wlan0 = self.get_addr('wlan0')
         host = socket.gethostname()
@@ -361,18 +494,54 @@ class RCXMenu:
         else:
             lcd.write('wlan0 {}'.format(wlan0))
 
-	
+    #scrolls LEDs while waiting for subprocess.popen to complete 
+    #returns the return code int from the process
+    def p_wait(self,command):
+        #set state to turn on a single led 000001 = 1
+        graph_state = 1
+        #launch command in the background
+        process = subprocess.Popen(command)
 
+        #loop through while command is running
+        while process.poll() == None:
+            self.set_bar_graph(graph_state)
 
+            #rotate the active LED
+            graph_state = (graph_state << 1) + (graph_state >> backlight.NUM_LEDS) & 1
+            #wait 1 second before checking again
+            time.sleep(1)
+
+        self.set_bar_graph(0)
+        return process.poll()
+
+    #sets Bar graph LEDs state based on bitwise integer
+    def set_bar_graph(self,graph,duty=0):
+        #set brightness of LEDs
+        backlight.graph_set_led_duty(0, duty)
+        #loop through the LEDs
+        for led in range(backlight.NUM_LEDS):
+            #set each LED based on bits in the integer
+            backlight.graph_set_led_state(led, (graph >> led) & 1)
+
+    #enable menu keys
     def enable(self):
         self.active = True
         self.refresh_lcd()
 
+    #disable menu keys
     def disable(self):
         self.active = False
-        
 
-#initialize all LCD and LEDs
+    #set back flag to wait for back button press
+    def set_backflag(self):
+        self.backflag = True
+
+
+
+
+
+
+#show start screen and initialize all LCD and LEDs
 def init_display():
     lcd.clear()
     backlight.rgb(255, 255, 255)
@@ -387,14 +556,14 @@ def init_display():
     for led in range(6):
         backlight.graph_set_led_state(led, 0)
     
-#main menu
+#main function
 def main(argv):
 
     init_display()
 
     rmenu = RCXMenu()
     
-    #define callbacks to buttons
+    #assign menu callbacks to buttons
     @nav.on(nav.UP)
     def handle_up(ch, evt):
         print("Up pressed!")
@@ -426,10 +595,16 @@ def main(argv):
         print("Cancel pressed!")
         rmenu.button_back()
 
+    #activate menu
     rmenu.enable()
-    # Prevent the script exiting!
+
+    # wait for key presses
     signal.pause()
+
+
+
+
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
