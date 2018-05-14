@@ -580,7 +580,6 @@ class RCXMenu:
 
         #loop through while command is running
         while process.poll() == None:
-            print(str(graph_state))
             self.set_bar_graph(graph_state)
 
             #rotate the active LED
@@ -644,33 +643,27 @@ def main(argv):
     #assign menu callbacks to buttons
     @nav.on(nav.UP)
     def handle_up(ch, evt):
-        print("Up pressed!")
         rmenu.button_up()
 
     @nav.on(nav.DOWN)
     def handle_down(ch, evt):
-        print("Down pressed!")
         rmenu.button_down()
 
     @nav.on(nav.LEFT)
     def handle_left(ch, evt):
-        print("Left pressed!")
         rmenu.button_left()
 
     @nav.on(nav.RIGHT)
     def handle_right(ch, evt):
-        print("Right pressed!")
         rmenu.button_right()
 
     @nav.on(nav.BUTTON)
     def handle_button(ch, evt):
-        print("Button pressed!")
         rmenu.button_select()
 
 
     @nav.on(nav.CANCEL)
     def handle_cancel(ch, evt):
-        print("Cancel pressed!")
         rmenu.button_back()
 
     #activate menu
