@@ -57,7 +57,7 @@ class RCXMenu:
                 'Settings' : {
                     0 : 'Robot Type',
                     1 : 'Display',
-                    2 : 'Firmware',
+                    2 : 'RCX Firmware',
                     3 : 'IR Tower',
                     4 : 'Network',
                     5 : 'Update', 
@@ -107,7 +107,7 @@ class RCXMenu:
 
         #Populate menus based on available files/folders/devices
         self.menu['Robot Type'] = self.get_dir_dict(self.class_path)
-        self.menu['Firmware'] = self.get_file_dict(self.firmware_path)
+        self.menu['RCX Firmware'] = self.get_file_dict(self.firmware_path)
         self.menu['IR Tower'] = self.get_file_dict(self.tower_dev_path)
 
         #Here's where the magic happens.  We are going through each dynamic
@@ -122,9 +122,9 @@ class RCXMenu:
             self.variable_map['MAINSettingsRobot Type' + class_dir] = partial(self.is_robot_sel,class_dir)
         
         #Create and assign functions for Firmware dynamic menu
-        for fw_file in self.menu['Firmware'].values():
-            self.commands['MAINSettingsFirmware' + fw_file] = partial(self.set_firmware_file,fw_file)
-            self.variable_map['MAINSettingsFirmware' + fw_file] = partial(self.is_firmware_sel,fw_file)
+        for fw_file in self.menu['RCX Firmware'].values():
+            self.commands['MAINSettingsRCX Firmware' + fw_file] = partial(self.set_firmware_file,fw_file)
+            self.variable_map['MAINSettingsRCX Firmware' + fw_file] = partial(self.is_firmware_sel,fw_file)
 
         #Create and assign functions for IR Tower dynamic menu
         for tower_dev in self.menu['IR Tower'].values():
