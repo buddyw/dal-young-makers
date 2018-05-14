@@ -50,6 +50,10 @@ class RCXMenu:
                     0 : 'No', 
                     1 : 'Yes'
                     },
+                'Flash programs' : {
+                    0 : 'No', 
+                    1 : 'Yes'
+                    },
                 'Settings' : {
                     0 : 'Robot Type',
                     1 : 'Display',
@@ -74,6 +78,7 @@ class RCXMenu:
         #select button is pressed
         self.commands = {
                 'MAINFlash firmwareYes' : self.flash_fw,
+                'MAINFlash programsYes' : self.flash_class,
                 'MAINShutdownYes' : self.shutdown_system,
                 'MAINSettingsNetwork' : self.show_network,
                 'MAINSettingsAbout' : self.show_about,
@@ -306,7 +311,7 @@ class RCXMenu:
     #      ... etc.
     #  }
     def get_dir_dict(self,dir_name):
-        classes = [name for name in os.listdir(dir_name) if os.path.isdir(os.path.join(dir_name,name))]
+        classes = [name for name in os.listdir(dir_name) if os.path.isdir(os.path.join(dir_name,name)) and not name.startswith('.')]
         dict_entries = zip(range(len(classes)),classes)
         class_dict = {}
         for entry in dict_entries:
@@ -321,7 +326,7 @@ class RCXMenu:
     #      ... etc.
     #  }
     def get_file_dict(self,dir_name):
-        classes = os.listdir(dir_name)
+        classes = [name for name in os.listdir(dir_name) if not name.startswith('.')]
         dict_entries = zip(range(len(classes)),classes)
         class_dict = {}
         for entry in dict_entries:
@@ -354,8 +359,9 @@ class RCXMenu:
     def flash_fw(self):
         self.disable()
         lcd.clear()
-        lcd.write('Flashing: ' + self.firmware)
-        ret=self.p_wait(['nqc','-Susb:' + 'self.tower_dev', '-firmware', self.firmware_file])
+        lcd.write('Flashing FW File')
+        lcd.write(self.firmware_file.ljust(16))
+        ret=self.p_wait(['nqc','-Susb:' + self.tower_dev, '-firmware', os.path.join(self.firmware_path,self.firmware_file)])
 
         if ret == 0:
             lcd.write('Flash Succeded!')
@@ -368,14 +374,48 @@ class RCXMenu:
         self.enable()
         
     #flashes a single program to the RCX
+    #returns zero for success and non-zero for failure
     def flash_prog(self,program_number,nqc_file):
-        pass
+        #calculate raw command to change program number
+        rawcmd = 9899 + program_number
+
+        #change the program number
+        ret = self.p_wait(["nqc", "-Susb:" + self.tower_dev, "-raw", str(rawcmd)])
+
+        #let's retry
+        if ret != 0:
+            ret = self.p_wait(["nqc", "-Susb:" + self.tower_dev, "-raw", str(rawcmd)])
+
+        #give up
+        if ret != 0:
+            return ret
+        
+        #write the program
+        ret = self.p_wait(["nqc", "-Susb:" + self.tower_dev, "-d", os.path.join(os.path.join(self.class_path,self.robot_type),nqc_file)])
+
+        return ret
 
     #flashes all programs in class/robot type
     #folder based on settings
     def flash_class(self):
-        for prog_num in range(1,5):
-            pass
+
+        #get a list of files that exist in class_path 1.nqc .. 5.nqc
+        program_files = [(x,str(x) + '.nqc') for x in range(1,6) if os.path.isfile(os.path.join(os.path.join(self.class_path,self.robot_type),str(x) + '.nqc'))]
+
+        lcd.clear()
+        lcd.write('Found ' + str(len(program_files)) + ' progs   ')
+        lcd.write('in ' + self.robot_type[0:14])
+        time.sleep(3)
+        for prog in program_files:
+            lcd.clear()
+            lcd.write('Writing ' + prog[1] + '...')
+            ret = self.flash_prog(prog[0],prog[1])
+            if ret != 0:
+                lcd.write("Write Failed!")
+                break
+
+        self.set_backflag()
+        self.enable()
     
     #Updates software on device
     #requires internet access
@@ -540,12 +580,13 @@ class RCXMenu:
 
         #loop through while command is running
         while process.poll() == None:
+            print(str(graph_state))
             self.set_bar_graph(graph_state)
 
             #rotate the active LED
-            graph_state = (graph_state << 1) + (graph_state >> backlight.NUM_LEDS) & 1
+            graph_state = ((graph_state << 1) & 63) | ((graph_state >> (backlight.NUM_LEDS - 1)) & 1)
             #wait 1 second before checking again
-            time.sleep(.5)
+            time.sleep(.10)
 
         self.set_bar_graph(0)
         return process.poll()
