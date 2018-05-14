@@ -241,6 +241,7 @@ class RCXMenu:
     #set class/robot type to directory name
     def set_robot_type(self,class_dir):
         self.robot_type = class_dir
+        self.refresh_lcd()
 
     #return '*' if directory name is selected
     #otherwise return ' '
@@ -253,6 +254,7 @@ class RCXMenu:
     #set firmware file name
     def set_firmware_file(self,fw_file):
         self.firmware_file = fw_file
+        self.refresh_lcd()
 
     #return '*' if firmware file is selected
     #otherwise return ' '
@@ -265,6 +267,7 @@ class RCXMenu:
     #set IR tower device name
     def set_tower_dev(self,tower_dev):
         self.tower_dev = tower_dev
+        self.refresh_lcd()
 
     #return '*' if IR Tower device is selected
     #otherwise return ' '
